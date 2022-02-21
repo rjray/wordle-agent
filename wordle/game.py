@@ -10,6 +10,8 @@ from random import shuffle
 import sys
 from typing import List
 
+from .utils import read_words
+
 
 class Game():
     """The Game class encapsulates the "umpire" of the game: an entity that
@@ -25,14 +27,12 @@ class Game():
         game-words are played in Wordle order or randomized."""
 
         if isinstance(words, str):
-            with open(words, "r") as f:
-                self.words = set([line.strip() for line in f.readlines()])
+            self.words = set(read_words(words))
         else:
             self.words = words.copy()
 
         if isinstance(answers, str):
-            with open(answers, "r") as f:
-                self.answers = [line.strip() for line in f.readlines()]
+            self.answers = read_words(answers)
         else:
             self.answers = answers.copy()
 
