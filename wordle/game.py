@@ -8,6 +8,7 @@ play as many games as there are answer words.
 from collections import Counter
 from random import shuffle
 import sys
+from typing import List
 
 
 class Game():
@@ -17,7 +18,7 @@ class Game():
     play all 2315 game-words in sequence (or randomly), signalling when the
     list of game-words has been exhausted."""
 
-    def __init__(self, answers: list | str, words: list | str, *,
+    def __init__(self, answers: List[str] | str, words: List[str] | str, *,
                  random: bool = False) -> None:
         """Constructor. Takes two lists of words (either lists or filenames)
         and an optional ``random`` Boolean argument that governs whether the
@@ -61,7 +62,7 @@ class Game():
 
         return True
 
-    def guess(self, guess: str) -> list[str]:
+    def guess(self, guess: str) -> List[int]:
         """Score the agent's guess, per Wordle rules. Returns a 5-element list
         of values in the range [0 .. 2], where:
 
