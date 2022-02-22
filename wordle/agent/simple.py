@@ -7,6 +7,7 @@ filtering each iteration.
 
 from itertools import product
 from operator import itemgetter
+from random import Random
 from typing import List
 
 from .base import BaseAgent
@@ -46,8 +47,10 @@ def filter_out(words_in: set, guess: str, score: List[int]):
 
 
 class SimpleAgent(BaseAgent):
-    def __init__(self, wordle: Game, words: List[str] | str = None) -> None:
+    def __init__(self, wordle: Game, words: List[str] | str = None, *,
+                 seed: int = None) -> None:
         super().__init__(wordle, words)
+        self.rng = Random(seed)
 
     def get_candidate_words(self, words: set) -> List[str]:
         if not words:
@@ -92,7 +95,8 @@ class SimpleAgent(BaseAgent):
                 print(f"Round {round+1}: have run out of candidate words.")
                 break
             else:
-                guess = word_list[0]
+                # guess = word_list[0]
+                guess = self.rng.choice(word_list)
                 score = self.game.guess(guess)
                 result["guesses"].append((guess, score))
                 if sum(score) == 10:
