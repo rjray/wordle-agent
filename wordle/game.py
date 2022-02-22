@@ -53,7 +53,7 @@ class Game():
         False value if there are no more words in the list."""
 
         self.index += 1
-        if self.index == len(self.answers):
+        if self.index > len(self.answers):
             return False
 
         self.word = self.answers[self.index - 1]
