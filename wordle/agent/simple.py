@@ -21,15 +21,20 @@ def score(word: str):
 def filter_out(words_in: set, guess: str, score: List[int]):
     words = list(words_in)
 
-    # First get all words that contain a letter known to be completely absent.
-    exclude = [guess[i] for i in range(5) if score[i] == 0]
-    for ch in exclude:
-        words = list(filter(lambda word: ch not in word, words))
-
-    # Next, get all the words that match letters and positions of correct slots.
+    # First, get all the words that match letters in correct positions.
     include = [(guess[i], i) for i in range(5) if score[i] == 2]
     for ch, i in include:
         words = list(filter(lambda word: word[i] == ch, words))
+
+    # Next, drop all words that contain a letter known to be completely absent.
+    # Unless it matches a letter from the previous step, then don't skip the
+    # word after all.
+    keep = [ch for ch, _ in include]
+    exclude = [guess[i] for i in range(5) if score[i] == 0]
+    for ch in exclude:
+        if ch in keep:
+            continue
+        words = list(filter(lambda word: ch not in word, words))
 
     # Lastly, look for letters that must be present, but not in their current
     # position.
