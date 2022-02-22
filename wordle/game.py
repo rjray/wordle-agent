@@ -42,7 +42,7 @@ class Game():
         else:
             self.answers = answers.copy()
 
-        if self.randomize.randomize:
+        if self.randomize:
             self.rng.shuffle(self.answers)
 
         self.index = 0
