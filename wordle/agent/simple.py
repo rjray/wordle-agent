@@ -48,8 +48,9 @@ def filter_out(words_in: set, guess: str, score: List[int]):
 
 class SimpleAgent(BaseAgent):
     def __init__(self, wordle: Game, words: List[str] | str = None, *,
-                 seed: int = None) -> None:
+                 randomize: bool = True, seed: int = None) -> None:
         super().__init__(wordle, words)
+        self.randomize = randomize
         self.rng = Random(seed)
 
     def get_candidate_words(self, words: set) -> List[str]:
@@ -95,10 +96,14 @@ class SimpleAgent(BaseAgent):
                 print(f"Round {round+1}: have run out of candidate words.")
                 break
             else:
-                # guess = word_list[0]
-                guess = self.rng.choice(word_list)
+                if self.randomize:
+                    guess = self.rng.choice(word_list)
+                else:
+                    guess = word_list[0]
+
                 score = self.game.guess(guess)
                 result["guesses"].append((guess, score))
+
                 if sum(score) == 10:
                     result["result"] = 1
                     result["word"] = guess
