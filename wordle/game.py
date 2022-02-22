@@ -7,7 +7,6 @@ play as many games as there are answer words.
 
 from collections import Counter
 from random import shuffle
-import sys
 from typing import List
 
 from .utils import read_words
@@ -42,15 +41,10 @@ class Game():
         self.index = 0
         self.guesses = 0
         self.word = None
-        self.playing = False
 
     def start(self) -> bool:
         """Start a game on the next word in the list of answer-words. Returns a
         False value if there are no more words in the list."""
-
-        if self.playing:
-            print("WARNING: Starting next game while current one in progress",
-                  file=sys.stderr)
 
         self.index += 1
         if self.index == len(self.answers):
@@ -58,7 +52,6 @@ class Game():
 
         self.guesses = 0
         self.word = self.answers[self.index - 1]
-        self.playing = True
 
         return True
 
@@ -73,7 +66,7 @@ class Game():
         Throws an error if not in an active game or if the guess is not in
         the list of allowed words."""
 
-        if not self.playing:
+        if not self.word:
             raise Exception("score_guess(): called with no active word")
         if len(guess) != 5:
             raise Exception(f"score_guess(): {guess} is not 5 letters")
@@ -102,10 +95,10 @@ class Game():
             elif counts[g] > 0:
                 rtn[i] = 1
 
-        # If they've correctly guessed the word, flip self.playing to prevent
-        # extra guessing.
-        if guess == self.word:
-            self.playing = False
-
         # Return the score.
         return rtn
+
+    def reset(self) -> None:
+        self.index = 0
+        self.guesses = 0
+        self.word = None
