@@ -6,7 +6,7 @@ play as many games as there are answer words.
 """
 
 from collections import Counter
-from random import shuffle
+from random import Random
 from typing import List
 
 from .utils import read_words
@@ -20,10 +20,17 @@ class Game():
     list of game-words has been exhausted."""
 
     def __init__(self, answers: List[str] | str, words: List[str] | str, *,
-                 random: bool = False) -> None:
+                 randomize: bool = False, seed: int = None) -> None:
         """Constructor. Takes two lists of words (either lists or filenames)
-        and an optional ``random`` Boolean argument that governs whether the
-        game-words are played in Wordle order or randomized."""
+        and an optional ``randomize`` Boolean keyword argument that governs
+        whether the game-words are played in Wordle order or randomized. The
+        other optional keyword argument, ``seed``, can be passed to set the
+        period of the random number generator."""
+
+        # Keep a separate RNG, so that it doesn't perturb any randomness in
+        # agent classes.
+        self.randomize = randomize
+        self.rng = Random(seed)
 
         if isinstance(words, str):
             self.words = set(read_words(words))
@@ -35,11 +42,10 @@ class Game():
         else:
             self.answers = answers.copy()
 
-        if random:
-            shuffle(self.answers)
+        if self.randomize.randomize:
+            self.rng.shuffle(self.answers)
 
         self.index = 0
-        self.guesses = 0
         self.word = None
 
     def start(self) -> bool:
@@ -50,7 +56,6 @@ class Game():
         if self.index == len(self.answers):
             return False
 
-        self.guesses = 0
         self.word = self.answers[self.index - 1]
 
         return True
@@ -73,11 +78,6 @@ class Game():
         if guess not in self.words:
             raise Exception(f"score_guess(): {guess} is not an allowed guess")
 
-        # If there have already been 6 guesses, return an empty list
-        if self.guesses == 6:
-            return []
-
-        self.guesses += 1
         rtn = [0, 0, 0, 0, 0]
         counts = Counter(self.word)
 
@@ -100,5 +100,6 @@ class Game():
 
     def reset(self) -> None:
         self.index = 0
-        self.guesses = 0
         self.word = None
+        if self.randomize:
+            self.rng.shuffle(self.answers)
