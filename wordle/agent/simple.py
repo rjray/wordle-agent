@@ -75,23 +75,28 @@ class SimpleAgent(BaseAgent):
     though the ``Game`` class doesn't enforce hard mode play."""
 
     def __init__(self, game: Game, words: List[str] | str = None, *,
-                 randomize: bool = True, seed: int = None) -> None:
+                 randomize: bool = True, seed: int = None, name: str) -> None:
         """Constructor for SimpleAgent. Handles the specific parameters
         ``randomize`` and ``seed`` which are not recognized by ``BaseAgent``.
 
-        Parameters:
+        Positional parameters:
 
             game: An instance of the wordle.game.Game class
             words: The allowed (guessable) words, a list or a file name. If not
                    given, the superclass constructor takes the list of words
                    from the ``game`` parameter.
+
+        Keyword parameters:
+
             randomize: A keyword Boolean parameter, whether to use randomness
                        in selecting each guess
             seed: A specific seed value to use for the localized random number
                   generator
+            name: An identifying string to use in stringification of this
+                  instance, to discern it from other instances
         """
 
-        super().__init__(game, words)
+        super().__init__(game, words, name=name)
         self.randomize = randomize
         self.rng = Random(seed)
 
