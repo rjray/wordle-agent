@@ -50,15 +50,20 @@ def filter_out(words_in: List[str], guess: str, score: List[int]):
     keep = [ch for ch, _ in include]
     exclude = [guess[i] for i in range(5) if score[i] == 0]
     for ch in exclude:
-        if ch in keep:
-            continue
-        words = list(filter(lambda word: ch not in word, words))
+        if ch not in keep:
+            words = list(filter(lambda word: ch not in word, words))
 
     # Lastly, look for letters that must be present, but not in their current
     # position.
     present = [(guess[i], i) for i in range(5) if score[i] == 1]
     for ch, i in present:
         words = list(filter(lambda word: ch in word and word[i] != ch, words))
+
+    # In some cases, the actual guess-word can survive to this point. Make sure
+    # it isn't in the new list.
+    words_set = set(words)
+    if guess in words_set:
+        words.remove(guess)
 
     return words
 
@@ -160,7 +165,7 @@ class SimpleAgent(BaseAgent):
                 if sum(score) == 10:
                     result["result"] = 1
                     result["word"] = guess
-                    print(f"Guessed: {guess} ({round+1}/6)")
+                    # print(f"Guessed: {guess} ({round+1}/6)")
                     break
                 else:
                     # If we haven't found the word, trim the list down based on
@@ -171,7 +176,7 @@ class SimpleAgent(BaseAgent):
             # If we didn't find it within the given number of tries, mark it as
             # a "loss".
             result["word"] = self.game.word
-            print(f"Failed to guess: {self.game.word}")
+            # print(f"Failed to guess: {self.game.word}")
 
         return result
 
