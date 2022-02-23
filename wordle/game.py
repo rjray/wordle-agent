@@ -21,11 +21,19 @@ class Game():
 
     def __init__(self, answers: List[str] | str, words: List[str] | str, *,
                  randomize: bool = False, seed: int = None) -> None:
-        """Constructor. Takes two lists of words (either lists or filenames)
-        and an optional ``randomize`` Boolean keyword argument that governs
-        whether the game-words are played in Wordle order or randomized. The
-        other optional keyword argument, ``seed``, can be passed to set the
-        period of the random number generator."""
+        """Constructor. Build the basic Game object and set it up for immediate
+        use. Stores the word-lists and initializes internal values.
+
+        Parameters:
+
+            answers: A filename of answer-words or a list of words
+            words: A filename of acceptable guess-words or a list of words
+            randomize: A Boolean flag (default False) that tells whether to
+                       shuffle the list of answer-words before starting a new
+                       game sequence
+            seed: An integer value (default None) that is used as the seed for
+                  the internal random.Random instance used to shuffle the words
+        """
 
         # Keep a separate RNG, so that it doesn't perturb any randomness in
         # agent classes.
@@ -99,6 +107,9 @@ class Game():
         return rtn
 
     def reset(self) -> None:
+        """Reset the game object so that it can be used for another run. If the
+        ``randomize`` attribute was set to True at creation, the list of words
+        will be re-shuffled."""
         self.index = 0
         self.word = None
         if self.randomize:
