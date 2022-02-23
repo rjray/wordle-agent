@@ -31,8 +31,7 @@ class SimpleAgent(BaseAgent):
 
     def __init__(self, game: Game, words: List[str] | str = None, *,
                  name: str) -> None:
-        """Constructor for SimpleAgent. Handles the specific parameters
-        ``randomize`` and ``seed`` which are not recognized by ``BaseAgent``.
+        """Constructor for SimpleAgent. Just passes through to the superclass.
 
         Positional parameters:
 
@@ -93,7 +92,6 @@ class SimpleAgent(BaseAgent):
             words.remove(guess)
 
         return words
-
 
     def select_guess(self, guesses: List[str]) -> str:
         """Return a selected word from the list of possible guesses. For this

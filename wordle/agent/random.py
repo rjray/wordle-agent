@@ -2,7 +2,8 @@
 
 This module implements a very simple agent that has no learning. It simply
 chooses words based on letter frequency from a list that is shortened by
-filtering each iteration.
+filtering each iteration. It then randomly selects a guess from the pool of
+candidates.
 """
 
 from random import Random
