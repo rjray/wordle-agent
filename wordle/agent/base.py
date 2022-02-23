@@ -120,6 +120,7 @@ class BaseAgent():
         guess_avg = sum(len(r["guesses"]) for r in history) / len(history)
 
         return {
+            "name": f"{self}",
             "history": history,
             "count": len(history),
             "guess_avg": guess_avg,
