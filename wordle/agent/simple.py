@@ -24,20 +24,20 @@ def score(word: str):
     return len(set(word))
 
 
-def filter_out(words_in: set[str], guess: str, score: List[int]):
-    """Filter a new set of viable words based on the rules of this agent. For
+def filter_out(words_in: List[str], guess: str, score: List[int]):
+    """Filter a new list of viable words based on the rules of this agent. For
     this agent, the filtering rules are essentially hard-mode playing. The list
     is winnowed down by applying simple logic around the letter scores from the
     guess.
 
     Parameters:
 
-        words_in: A set instance with the current candidate words
+        words_in: A list of the current candidate words
         guess: The most-recent guess made by the agent
         score: The list of per-letter scores for the guess
     """
 
-    words = list(words_in)
+    words = words_in.copy()
 
     # First, get all the words that match letters in correct positions.
     include = [(guess[i], i) for i in range(5) if score[i] == 2]
@@ -60,7 +60,7 @@ def filter_out(words_in: set[str], guess: str, score: List[int]):
     for ch, i in present:
         words = list(filter(lambda word: ch in word and word[i] != ch, words))
 
-    return set(words)
+    return words
 
 
 class SimpleAgent(BaseAgent):
@@ -90,7 +90,7 @@ class SimpleAgent(BaseAgent):
         self.randomize = randomize
         self.rng = Random(seed)
 
-    def get_candidate_words(self, words: set[str]) -> List[str]:
+    def get_candidate_words(self, words: List[str]) -> List[str]:
         """Create a list of candidate words from the given set of words. Uses
         the frequency of the letters to find words that are created from the
         most-frequent letters possible."""
@@ -99,11 +99,11 @@ class SimpleAgent(BaseAgent):
             return []
 
         candidates = []
-        frequencies = letter_freq(list(words)).most_common()
+        frequencies = letter_freq(words).most_common()
         frequencies.reverse()
         letters = []
-        # Set up the first 4 letters. The while-loop will cover adding new
-        # letters.
+        # Set up the first 4 letters (if there are 4). The while-loop will
+        # cover adding new letters.
         for _ in range(4):
             if frequencies:
                 letters.append(frequencies.pop()[0])
@@ -116,7 +116,8 @@ class SimpleAgent(BaseAgent):
             # permutations of letters with repetition.
             products = map(lambda x: "".join(x), product(letters, repeat=5))
             # Filter it down to acceptable Wordle guesses.
-            possibles = filter(lambda x: x in words, products)
+            word_set = set(words)
+            possibles = filter(lambda x: x in word_set, products)
             # Now further order it by words that have the most unique letters
             weighted = [(x, score(x)) for x in possibles]
             weighted.sort(key=itemgetter(1), reverse=True)
@@ -130,8 +131,8 @@ class SimpleAgent(BaseAgent):
         """Play a single word, creating and returning some data from the
         process (including the result)."""
 
-        # Start by making a set object from the words list.
-        words = set(self.words)
+        # Start by making a local copy of the words list.
+        words = self.words.copy()
         result = {"guesses": [], "word": None, "result": 0}
 
         for round in range(6):
