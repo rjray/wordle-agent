@@ -30,7 +30,7 @@ class SimpleAgent(BaseAgent):
     though the ``Game`` class doesn't enforce hard mode play."""
 
     def __init__(self, game: Game, words: List[str] | str = None, *,
-                 name: str) -> None:
+                 name: str = None) -> None:
         """Constructor for SimpleAgent. Just passes through to the superclass.
 
         Positional parameters:
