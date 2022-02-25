@@ -23,7 +23,7 @@ class BaseAgent():
             game: An instance of the wordle.game.Game class
             words: The allowed (guessable) words, a list or a file name. If not
                    given, takes the list of words from the ``game`` parameter.
-        
+
         Keyword parameters:
 
             name: An identifying string that will be incorporated into the
