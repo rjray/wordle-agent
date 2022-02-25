@@ -24,10 +24,13 @@ class Game():
         """Constructor. Build the basic Game object and set it up for immediate
         use. Stores the word-lists and initializes internal values.
 
-        Parameters:
+        Positional parameters:
 
             answers: A filename of answer-words or a list of words
             words: A filename of acceptable guess-words or a list of words
+
+        Keyword parameters:
+
             randomize: A Boolean flag (default False) that tells whether to
                        shuffle the list of answer-words before starting a new
                        game sequence
@@ -103,6 +106,10 @@ class Game():
                 continue
             elif counts[g] > 0:
                 rtn[i] = 1
+
+        # If this guess is correct, move the object to a not-playing state:
+        if sum(rtn) == 10:
+            self.word = None
 
         # Return the score.
         return rtn
