@@ -38,12 +38,13 @@ class Game():
         # Keep a separate RNG, so that it doesn't perturb any randomness in
         # agent classes.
         self.randomize = randomize
-        self.rng = Random(seed)
+        if self.randomize:
+            self.rng = Random(seed)
 
         if isinstance(words, str):
             self.words = set(read_words(words))
         else:
-            self.words = words.copy()
+            self.words = set(words.copy())
 
         if isinstance(answers, str):
             self.answers = read_words(answers)
