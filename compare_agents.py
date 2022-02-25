@@ -8,6 +8,7 @@ import argparse
 import csv
 from importlib import import_module
 import matplotlib.pyplot as plt
+from concurrent.futures import ProcessPoolExecutor, as_completed
 import re
 from typing import Dict, List
 
@@ -165,6 +166,9 @@ def create_agent(type: str, args: Dict, game: Game):
 
     return agent
 
+def run_agent(a, count: int):
+    return a.play(count)
+
 def main():
     args = parse_command_line()
 
@@ -213,11 +217,20 @@ def main():
         agents.append(agent)
 
     # Run the agents, gathering the data.
-    agent_results = []
-    for a in agents:
-        print(f"Running agent {a}")
-        agent_result = a.play(args["count"])
-        agent_results.append(agent_result)
+    agent_results = [None] * len(agents)
+    print(f"Running {len(agents)} agents")
+    with ProcessPoolExecutor(max_workers=8) as executor:
+        future_to_idx = {executor.submit(run_agent, a, args["count"]): i
+            for i, a in enumerate(agents)}
+    for future in as_completed(future_to_idx):
+        idx = future_to_idx[future]
+        try:
+            data = future.result()
+        except Exception as e:
+            print(f"{agents[idx].name} threw exception: {e}")
+        else:
+            agent_results[idx] = data
+            print(f"Agent {data['name']} (index {idx}) completed")
 
     # Let's just make sure that each agent ran the same words in the same order.
     validate_data(agent_results)
