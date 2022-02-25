@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 
 import os, sys
-sys.path.append(os.path.dirname(__file__))
+_root_dir = os.path.dirname(__file__)
+sys.path.append(_root_dir)
 
 import argparse
 import csv
@@ -10,6 +11,7 @@ import matplotlib.pyplot as plt
 from typing import Dict, List
 
 from wordle.game import Game
+from wordle.utils import read_words
 
 AGENTS_MAP = {
     "random": ["wordle.agent.random", "RandomAgent"],
@@ -17,9 +19,13 @@ AGENTS_MAP = {
 }
 """A dictionary mapping command-line names of agent classes to the modules that
 are dynamically imported."""
+
 AGENTS_CODE = {}
+"""A mapping of agent names to the dynamically-loaded classes."""
 
 TF = {"True": True, "False": False}
+DEFAULT_ANSWERS = os.path.join(_root_dir, "data/answers.txt")
+DEFAULT_WORDS = os.path.join(_root_dir, "data/words.txt")
 
 
 def parse_command_line() -> Dict:
@@ -33,9 +39,8 @@ def parse_command_line() -> Dict:
                         dest="agents", required=True,
                         help="Specifications of agents to run")
     parser.add_argument("--answers", type=str, action="append",
-                        default="data/answers.txt",
                         help="Specific answer words, or a file name to use")
-    parser.add_argument("--words", type=str, default="data/words.txt",
+    parser.add_argument("--words", type=str, default=DEFAULT_WORDS,
                         help="File name of allowed guess-words")
     parser.add_argument("-n", "--count", type=int,
                         help="Solve only the first <count> words")
@@ -47,6 +52,8 @@ def parse_command_line() -> Dict:
                         help="Name of file to write bar graph to")
     parser.add_argument("-p", "--plot", type=str,
                         help="Name of file to write plot graph to")
+    parser.add_argument("--show", action="store_true",
+                        help="If passed, dump data to stdout")
 
     return vars(parser.parse_args())
 
@@ -86,22 +93,19 @@ def data2rows(data: List[Dict]) -> List[List]:
 
     return rows
 
-def write_csv_output(filename: str, data: List[Dict]) -> None:
-    rows = data2rows(data)
-
+def write_csv_output(filename: str, rows: List[List]) -> None:
     with open(filename, "w", newline="") as f:
         csv_writer = csv.writer(f, delimiter=",")
         csv_writer.writerows(rows)
 
     return
 
-def create_bar_chart(filename: str, data: List[Dict]) -> None:
-    rows = data2rows(data)
-
+def create_bar_chart(filename: str, rows: List[List]) -> None:
+    width = len(rows[0]) - 2
     labels = []
     values = []
-    for i in range(len(data)):
-        labels.append(data[i]["name"])
+    for i in range(width):
+        labels.append(rows[0][i+2])
         values.append([r[i+2] for r in rows[1:]])
 
     _, ax = plt.subplots()
@@ -118,13 +122,12 @@ def create_bar_chart(filename: str, data: List[Dict]) -> None:
 
     plt.savefig(filename)
 
-def create_plot(filename: str, data: List[Dict]) -> None:
-    rows = data2rows(data)
-
+def create_plot(filename: str, rows: List[List]) -> None:
+    width = len(rows[0]) - 2
     labels = []
     values = []
-    for i in range(len(data)):
-        labels.append(data[i]["name"])
+    for i in range(width):
+        labels.append(rows[0][i+2])
         values.append([r[i+2] for r in rows[1:]])
 
     _, ax = plt.subplots()
@@ -157,6 +160,18 @@ def create_agent(type: str, args: Dict, game: Game):
 def main():
     args = parse_command_line()
 
+    # Handle the answers/words arguments.
+    words_list = read_words(args["words"])
+    if not args["answers"]:
+        answers_list = read_words(DEFAULT_ANSWERS)
+    elif os.path.isfile(args["answers"][0]):
+        answers_list = read_words(args["answers"][0])
+    else:
+        answers_list = ",".join(args["answers"]).split(",")
+        if list(filter(lambda w: len(w) != 5, answers_list)):
+            raise Exception("One or more words not 5 letters long")
+
+    # Set up keyword arguments (if any) for the Game instances.
     game_args = {}
     if args["game"]:
         for pair in args["game"]:
@@ -165,6 +180,7 @@ def main():
                 value = TF[value]
             game_args[key] = value
 
+    # Set up the agents.
     agents = []
     for agent_spec in args["agents"]:
         spec = agent_spec.split(",")
@@ -181,35 +197,39 @@ def main():
             agent_args[key] = value
 
         # Every agent gets a separate Game instance, in case of randomization.
-        game = Game(args["answers"], args["words"], **game_args)
+        game = Game(answers_list, words_list, **game_args)
         agent = create_agent(agent_type, agent_args, game)
 
         agents.append(agent)
 
+    # Run the agents, gathering the data.
     agent_results = []
     for a in agents:
         print(f"Running agent {a}")
         agent_result = a.play(args["count"])
         agent_results.append(agent_result)
 
-    # import pprint
-    # pp = pprint.PrettyPrinter(indent=2)
-    # pp.pprint(agent_results)
-
+    # Let's just make sure that each agent ran the same words in the same order.
     validate_data(agent_results)
 
     # Process the data.
+    agent_rows = data2rows(agent_results)
     if args["output"]:
         print(f"Writing {args['output']}")
-        write_csv_output(args["output"], agent_results)
+        write_csv_output(args["output"], agent_rows)
 
     if args["bar_chart"]:
         print(f"Creating bar chart ({args['bar_chart']})")
-        create_bar_chart(args["bar_chart"], agent_results)
+        create_bar_chart(args["bar_chart"], agent_rows)
 
     if args["plot"]:
         print(f"Creating plot ({args['plot']})")
-        create_plot(args["plot"], agent_results)
+        create_plot(args["plot"], agent_rows)
+
+    if args["show"]:
+        import pprint
+        pp = pprint.PrettyPrinter(indent=2)
+        pp.pprint(agent_results)
 
 
 if __name__ == '__main__':
