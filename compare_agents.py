@@ -109,12 +109,17 @@ def create_bar_chart(filename: str, rows: List[List]) -> None:
         values.append([r[i+2] for r in rows[1:]])
 
     _, ax = plt.subplots()
-    ax.axes.xaxis.set_visible(False)
 
-    ax.bar(range(1, len(rows)), values[0], label=labels[0])
+    words = [row[1] for row in rows[1:]]
+    ax.bar(words, values[0], label=labels[0])
     for i in range(1, len(values)):
-        ax.bar(range(1, len(rows)), values[i], label=labels[i],
+        ax.bar(words, values[i], label=labels[i],
                bottom=values[i-1])
+
+    if len(values) <= 25:
+        plt.xticks(rotation=45, fontsize="small")
+    else:
+        ax.axes.xaxis.set_visible(False)
 
     ax.set_ylabel("Guesses")
     ax.set_title("Guesses by Word")
