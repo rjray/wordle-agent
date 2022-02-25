@@ -8,6 +8,7 @@ import argparse
 import csv
 from importlib import import_module
 import matplotlib.pyplot as plt
+import re
 from typing import Dict, List
 
 from wordle.game import Game
@@ -153,6 +154,8 @@ def create_plot(filename: str, rows: List[List]) -> None:
 def create_agent(type: str, args: Dict, game: Game):
     # Get the class to use:
     if type not in AGENTS_CODE:
+        if type not in AGENTS_MAP:
+            raise Exception(f"Unknown agent specification: {type}")
         module_name, class_name = AGENTS_MAP[type]
         module = import_module(module_name)
         AGENTS_CODE[type] = getattr(module, class_name)
@@ -183,6 +186,8 @@ def main():
             key, value = pair.split("=")
             if value in TF:
                 value = TF[value]
+            if re.match(value, "^\d+$"):
+                value = int(value)
             game_args[key] = value
 
     # Set up the agents.
@@ -190,8 +195,6 @@ def main():
     for agent_spec in args["agents"]:
         spec = agent_spec.split(",")
         agent_type = spec[0]
-        if agent_type not in AGENTS_MAP:
-            raise Exception(f"Unknown agent specification: {agent_type}")
         agent_args = {}
         # This is a default identifying string, in case no name is given
         # agent_args["name"] = f"agent{len(agents)}"
@@ -199,6 +202,8 @@ def main():
             key, value = pair.split("=")
             if value in TF:
                 value = TF[value]
+            if re.match(value, "^\d+$"):
+                value = int(value)
             agent_args[key] = value
 
         # Every agent gets a separate Game instance, in case of randomization.
