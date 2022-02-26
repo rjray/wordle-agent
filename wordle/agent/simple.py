@@ -7,10 +7,8 @@ filtering each iteration.
 
 from itertools import product
 from operator import itemgetter
-from typing import List
 
 from .base import BaseAgent
-from ..game import Game
 from ..utils import letter_freq
 
 
@@ -29,8 +27,7 @@ class SimpleAgent(BaseAgent):
     pool of viable guesses. It essentially plays the game in "hard mode", even
     though the ``Game`` class doesn't enforce hard mode play."""
 
-    def __init__(self, game: Game, words: List[str] | str = None, *,
-                 name: str = None) -> None:
+    def __init__(self, game, words = None, *, name = None):
         """Constructor for SimpleAgent. Just passes through to the superclass.
 
         Positional parameters:
@@ -48,7 +45,7 @@ class SimpleAgent(BaseAgent):
 
         super().__init__(game, words, name=name)
 
-    def apply_guess(self, words_in: List[str], guess: str, score: List[int]):
+    def apply_guess(self, words_in, guess, score):
         """Filter a new list of viable words based on the rules of this agent.
         For this agent, the filtering rules are essentially hard-mode playing.
         The list is winnowed down by applying simple logic around the letter
@@ -93,7 +90,7 @@ class SimpleAgent(BaseAgent):
 
         return words
 
-    def select_guess(self, guesses: List[str]) -> str:
+    def select_guess(self, guesses):
         """Return a selected word from the list of possible guesses. For this
         agent, this sorts the list by uniqueness of letters and then picks the
         first in the resulting list."""
@@ -104,7 +101,7 @@ class SimpleAgent(BaseAgent):
 
         return weighted[0][0]
 
-    def get_candidate_words(self, words: List[str]) -> List[str]:
+    def get_candidate_words(self, words):
         """Create a list of candidate words from the given set of words. Uses
         the frequency of the letters to find words that are created from the
         most-frequent letters possible."""

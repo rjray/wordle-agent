@@ -7,7 +7,6 @@ play as many games as there are answer words.
 
 from collections import Counter
 from random import Random
-from typing import List
 
 from .utils import read_words
 
@@ -19,8 +18,7 @@ class Game():
     play all 2315 game-words in sequence (or randomly), signalling when the
     list of game-words has been exhausted."""
 
-    def __init__(self, answers: List[str] | str, words: List[str] | str, *,
-                 randomize: bool = False, seed: int = None) -> None:
+    def __init__(self, answers, words, *, randomize = False, seed = None):
         """Constructor. Build the basic Game object and set it up for immediate
         use. Stores the word-lists and initializes internal values.
 
@@ -60,7 +58,7 @@ class Game():
         self.index = 0
         self.word = None
 
-    def start(self) -> bool:
+    def start(self):
         """Start a game on the next word in the list of answer-words. Returns a
         False value if there are no more words in the list."""
 
@@ -72,7 +70,7 @@ class Game():
 
         return True
 
-    def guess(self, guess: str) -> List[int]:
+    def guess(self, guess):
         """Score the agent's guess, per Wordle rules. Returns a 5-element list
         of values in the range [0 .. 2], where:
 
@@ -114,7 +112,7 @@ class Game():
         # Return the score.
         return rtn
 
-    def reset(self) -> None:
+    def reset(self):
         """Reset the game object so that it can be used for another run. If the
         ``randomize`` attribute was set to True at creation, the list of words
         will be re-shuffled."""

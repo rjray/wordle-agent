@@ -3,9 +3,6 @@
 This provides BaseAgent, the base class for other Agent implementations.
 """
 
-from typing import List
-
-from ..game import Game
 from ..utils import read_words
 
 
@@ -13,8 +10,7 @@ class BaseAgent():
     """The BaseAgent class is a common base-class for the different agents that
     will be developed. It only provides very basic operations."""
 
-    def __init__(self, game: Game, words: List[str] | str = None, *,
-                 name: str) -> None:
+    def __init__(self, game, words = None, *, name: str):
         """Base constructor, to handle basic parts like handling the word list
         and the game instance.
 
@@ -40,7 +36,7 @@ class BaseAgent():
         else:
             self.words = game.words.copy()
 
-    def __str__(self) -> str:
+    def __str__(self):
         """Provide a stringification of the object. If a ``name`` parameter
         was given at creation, include that."""
         if self.name:
@@ -48,7 +44,7 @@ class BaseAgent():
         else:
             return self.__class__.__name__
 
-    def reset(self) -> None:
+    def reset(self):
         """Perform a reset of the agent. In the case of the base class, this
         only calls the ``reset`` method on the game object."""
         self.game.reset()
@@ -97,7 +93,7 @@ class BaseAgent():
 
         return result
 
-    def play(self, n: int = None) -> List[dict]:
+    def play(self, n):
         """Play the full game. Will run all the words provided as answers in
         the game object (based on how it was instantiated), unless the ``n``
         parameter is passed and is non-zero. If ``n`` is passed, only the first

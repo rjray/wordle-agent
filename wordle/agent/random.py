@@ -7,10 +7,8 @@ candidates.
 """
 
 from random import Random
-from typing import List
 
 from .simple import SimpleAgent
-from ..game import Game
 
 
 class RandomAgent(SimpleAgent):
@@ -19,8 +17,7 @@ class RandomAgent(SimpleAgent):
     pool of viable guesses. Unlike ``SimpleAgent``, it then selects a new guess
     completely randomly from the pool of new candidate words."""
 
-    def __init__(self, game: Game, words: List[str] | str = None, *,
-                 name: str = None, seed: int = None) -> None:
+    def __init__(self, game, words = None, *, name = None, seed = None):
         """Constructor for RandomAgent. Handles the specific parameter ``seed``
         which is not recognized by ``SimpleAgent``.
 
@@ -42,7 +39,7 @@ class RandomAgent(SimpleAgent):
         super().__init__(game, words, name=name)
         self.rng = Random(seed)
 
-    def select_guess(self, guesses: List[str]) -> str:
+    def select_guess(self, guesses):
         """Return a selected word from the list of possible guesses. For this
         agent, this is a completely random selection."""
         return self.rng.choice(guesses)

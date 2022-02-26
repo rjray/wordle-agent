@@ -10,7 +10,6 @@ from importlib import import_module
 import matplotlib.pyplot as plt
 from concurrent.futures import ProcessPoolExecutor, as_completed
 import re
-from typing import Dict, List
 
 from wordle.game import Game
 from wordle.utils import read_words
@@ -30,7 +29,7 @@ DEFAULT_ANSWERS = os.path.join(_root_dir, "data/answers.txt")
 DEFAULT_WORDS = os.path.join(_root_dir, "data/words.txt")
 
 
-def parse_command_line() -> Dict:
+def parse_command_line():
     parser = argparse.ArgumentParser()
 
     # Set up the arguments:
@@ -59,7 +58,7 @@ def parse_command_line() -> Dict:
 
     return vars(parser.parse_args())
 
-def validate_data(data: List[Dict]) -> None:
+def validate_data(data):
     if len(data) < 2:
         # Nothing to validate
         return
@@ -76,7 +75,7 @@ def validate_data(data: List[Dict]) -> None:
 
     return
 
-def data2rows(data: List[Dict]) -> List[List]:
+def data2rows(data):
     rows = []
     row = ["index", "word"]
     for record in data:
@@ -95,14 +94,14 @@ def data2rows(data: List[Dict]) -> List[List]:
 
     return rows
 
-def write_csv_output(filename: str, rows: List[List]) -> None:
+def write_csv_output(filename, rows):
     with open(filename, "w", newline="") as f:
         csv_writer = csv.writer(f, delimiter=",")
         csv_writer.writerows(rows)
 
     return
 
-def create_bar_chart(filename: str, rows: List[List]) -> None:
+def create_bar_chart(filename, rows):
     width = len(rows[0]) - 2
     labels = []
     values = []
@@ -129,7 +128,7 @@ def create_bar_chart(filename: str, rows: List[List]) -> None:
 
     plt.savefig(filename)
 
-def create_plot(filename: str, rows: List[List]) -> None:
+def create_plot(filename, rows):
     width = len(rows[0]) - 2
     labels = []
     values = []
@@ -152,7 +151,7 @@ def create_plot(filename: str, rows: List[List]) -> None:
 
     plt.savefig(filename)
 
-def create_agent(type: str, args: Dict, game: Game):
+def create_agent(type, args, game):
     # Get the class to use:
     if type not in AGENTS_CODE:
         if type not in AGENTS_MAP:
@@ -166,7 +165,7 @@ def create_agent(type: str, args: Dict, game: Game):
 
     return agent
 
-def run_agent(a, count: int):
+def run_agent(a, count):
     return a.play(count)
 
 def main():

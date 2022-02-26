@@ -4,10 +4,9 @@ Any code/functions common to both the game engine and the agent classes.
 """
 
 from collections import Counter
-from typing import List
 
 
-def read_words(file: str) -> List[str]:
+def read_words(file):
     """Read a specified words file into a list of words with the newlines
     stripped. Return the list."""
     with open(file, "r") as f:
@@ -16,7 +15,7 @@ def read_words(file: str) -> List[str]:
     return words
 
 
-def letter_freq(words: List[str]) -> Counter:
+def letter_freq(words):
     """Computer the frequency of letters across the given list of words.
     Returns a ``Counter`` instance containing the counts."""
     c = Counter()
