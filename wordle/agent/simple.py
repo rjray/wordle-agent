@@ -61,7 +61,7 @@ class SimpleAgent(BaseAgent):
         words = words_in.copy()
 
         # First, get all the words that match letters in correct positions.
-        include = [(guess[i], i) for i in range(5) if score[i] == 2]
+        include = [(guess[i], i) for i in range(5) if score[i] == 0]
         for ch, i in include:
             words = list(filter(lambda word: word[i] == ch, words))
 
@@ -69,14 +69,14 @@ class SimpleAgent(BaseAgent):
         # absent. Unless it matches a letter from the previous step, then don't
         # skip the word after all.
         keep = [ch for ch, _ in include]
-        exclude = [guess[i] for i in range(5) if score[i] == 0]
+        exclude = [guess[i] for i in range(5) if score[i] == -1]
         for ch in exclude:
             if ch not in keep:
                 words = list(filter(lambda word: ch not in word, words))
 
         # Lastly, look for letters that must be present, but not in their
         # current position.
-        present = [(guess[i], i) for i in range(5) if score[i] == 1]
+        present = [(guess[i], i) for i in range(5) if score[i] == -0.5]
         for ch, i in present:
             words = list(
                 filter(lambda word: ch in word and word[i] != ch, words)

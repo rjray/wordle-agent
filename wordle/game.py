@@ -88,13 +88,13 @@ class Game():
         if guess not in self.words:
             raise Exception(f"score_guess(): {guess} is not an allowed guess")
 
-        rtn = [0, 0, 0, 0, 0]
+        rtn = [-1.0] * 5
         counts = Counter(self.word)
 
         # Look for exact matches:
         for i, c in enumerate(self.word):
             if c == guess[i]:
-                rtn[i] = 2
+                rtn[i] = 0.0
                 counts[c] -= 1
         # Now count the right-letter-wrong-place matches:
         for i, c in enumerate(self.word):
@@ -103,10 +103,10 @@ class Game():
                 # We've already counted this as an exact match
                 continue
             elif counts[g] > 0:
-                rtn[i] = 1
+                rtn[i] = -0.5
 
         # If this guess is correct, move the object to a not-playing state:
-        if sum(rtn) == 10:
+        if sum(rtn) == 0.0:
             self.word = None
 
         # Return the score.
