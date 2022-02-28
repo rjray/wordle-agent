@@ -55,6 +55,8 @@ def parse_command_line():
                         help="Name of file to write plot graph to")
     parser.add_argument("-r", "--runs", type=int, default=1,
                         help="Number of complete runs to do for all agents")
+    parser.add_argument("-m", "--max", type=int, default=os.cpu_count(),
+                        help="Maximum concurrent runs of agents")
     parser.add_argument("--show", action="store_true",
                         help="If passed, dump data to stdout")
 
@@ -186,6 +188,9 @@ def run_agent(agent, count):
 def main():
     args = parse_command_line()
 
+    if args["max"] < 1:
+        raise Exception("Cannot specify --max as less than 1")
+
     # Handle the answers/words arguments.
     words_list = read_words(args["words"])
     if not args["answers"]:
@@ -239,7 +244,7 @@ def main():
 
         print(f"  Running {len(agents)} agents")
         agent_results = [None] * len(agents)
-        with ProcessPoolExecutor(max_workers=8) as executor:
+        with ProcessPoolExecutor(max_workers=args["max"]) as executor:
             future_to_idx = {executor.submit(run_agent, a, args["count"]): i
                 for i, a in enumerate(agents)}
         for future in as_completed(future_to_idx):
@@ -247,10 +252,10 @@ def main():
             try:
                 data = future.result()
             except Exception as e:
-                print(f"{agents[idx].name} threw exception: {e}")
+                print(f"{agents[idx]} threw exception: {e}")
             else:
                 agent_results[idx] = data
-                print(f"    Agent {data['name']} (index {idx}) completed")
+                print(f"    Agent {data['name']} completed")
 
         # Let's just make sure that each agent ran the same words in the same
         # order.
