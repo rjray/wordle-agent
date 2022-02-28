@@ -43,3 +43,7 @@ class RandomAgent(SimpleAgent):
         """Return a selected word from the list of possible guesses. For this
         agent, this is a completely random selection."""
         return self.rng.choice(guesses)
+
+    def reset(self):
+        super().reset()
+        self.rng.seed()
