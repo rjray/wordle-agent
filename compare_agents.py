@@ -62,7 +62,7 @@ def parse_command_line():
 
     return vars(parser.parse_args())
 
-def validate_data(data):
+def validate_data(data, run):
     if len(data) < 2:
         # Nothing to validate
         return
@@ -72,10 +72,10 @@ def validate_data(data):
         thisname = cmp["name"]
         thishist = cmp["history"]
         if len(thishist) != len(basehist):
-            raise Exception(f"{thisname}:  history length mismatch")
+            raise Exception(f"{thisname} (run {run}):  history length mismatch")
         for i in range(len(basehist)):
             if basehist[i]["word"] != thishist[i]["word"]:
-                raise Exception(f"{thisname}: word {i} mismatch")
+                raise Exception(f"{thisname} (run {run}): word {i} mismatch")
 
     return
 
@@ -178,12 +178,15 @@ def create_agent(type, args, game):
 
     return agent
 
-def run_agent(agent, count):
+def run_agent(agent, run, count):
     # Reset the agent prior to the run. For some agents, this introduces a
     # slight amount of extra stochastic nature.
     agent.reset()
 
-    return agent.play(count)
+    print(f"  Started:  agent {agent}, run {run+1}")
+    result = agent.play(count)
+    print(f"  Finished: agent {agent}, run {run+1}")
+    return result
 
 def main():
     args = parse_command_line()
@@ -237,35 +240,33 @@ def main():
 
     # Run the agents, gathering the data.
     runs = args["runs"]
-    run_results = [None] * runs
+    run_results = [[None] * len(agents) for _ in range(runs)]
+    print(f"Setting up {runs*len(agents)} total agent-runs")
 
+    future_to_idx = {}
+    with ProcessPoolExecutor(max_workers=args["max"]) as executor:
+        for run in range(runs):
+            for i, agent in enumerate(agents):
+                future = executor.submit(run_agent, agent, run, args["count"])
+                future_to_idx[future] = (i, run)
+
+    for future in as_completed(future_to_idx):
+        idx, run = future_to_idx[future]
+        try:
+            data = future.result()
+        except Exception as e:
+            print(f"{agents[idx]} (run {run}) threw exception: {e}")
+        else:
+            run_results[run][idx] = data
+
+    # Handle validation and per-run actions.
     for run in range(runs):
-        print(f"Run {run+1} of {runs}")
-
-        print(f"  Running {len(agents)} agents")
-        agent_results = [None] * len(agents)
-        with ProcessPoolExecutor(max_workers=args["max"]) as executor:
-            future_to_idx = {executor.submit(run_agent, a, args["count"]): i
-                for i, a in enumerate(agents)}
-        for future in as_completed(future_to_idx):
-            idx = future_to_idx[future]
-            try:
-                data = future.result()
-            except Exception as e:
-                print(f"{agents[idx]} threw exception: {e}")
-            else:
-                agent_results[idx] = data
-                print(f"    Agent {data['name']} completed")
-
-        # Let's just make sure that each agent ran the same words in the same
+        # First make sure that each agent ran the same words in the same
         # order.
-        validate_data(agent_results)
-
-        # Save the data for this run
-        run_results[run] = agent_results
+        validate_data(run_results[run], run)
 
         # Produce CSV and/or bar chart output on a per-run basis:
-        agent_rows = data2rows(agent_results)
+        agent_rows = data2rows(run_results[run])
         if args["output"]:
             file = args["output"]
             if file.find("%d") >= 0:
@@ -280,8 +281,7 @@ def main():
             print(f"  Creating bar chart ({file})")
             create_bar_chart(file, agent_rows)
 
-    # Process the data.
-
+    # Process the full data.
     if args["plot"]:
         print(f"Creating plot ({args['plot']})")
         create_plot(args["plot"], run_results)
