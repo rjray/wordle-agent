@@ -5,10 +5,10 @@ _root_dir = os.path.dirname(__file__)
 sys.path.append(_root_dir)
 
 import argparse
+from concurrent.futures import ProcessPoolExecutor, as_completed
 import csv
 from importlib import import_module
 import matplotlib.pyplot as plt
-from concurrent.futures import ProcessPoolExecutor, as_completed
 import re
 
 from wordle.game import Game
@@ -53,6 +53,8 @@ def parse_command_line():
                         help="Name of file to write bar graph to")
     parser.add_argument("-p", "--plot", type=str,
                         help="Name of file to write plot graph to")
+    parser.add_argument("-r", "--runs", type=int, default=1,
+                        help="Number of complete runs to do for all agents")
     parser.add_argument("--show", action="store_true",
                         help="If passed, dump data to stdout")
 
@@ -128,25 +130,34 @@ def create_bar_chart(filename, rows):
 
     plt.savefig(filename)
 
-def create_plot(filename, rows):
-    width = len(rows[0]) - 2
-    labels = []
-    values = []
-    for i in range(width):
-        labels.append(rows[0][i+2])
-        values.append([r[i+2] for r in rows[1:]])
+def create_plot(filename, runs):
+    num_runs = len(runs)
+    labels = [agent_result["name"] for agent_result in runs[0]]
+    num_agents = len(labels)
+    min_y = 0
+    max_y = -30
+    scores = [[] for _ in range(num_agents)]
+    for i in range(num_agents):
+        for run in runs:
+            score = run[i]["score_avg"]
+            if score > max_y:
+                max_y = score
+            if score < min_y:
+                min_y = score
+            scores[i].append(score)
+    # import pprint
+    # pp = pprint.PrettyPrinter(indent=2)
+    # pp.pprint(scores)
 
     _, ax = plt.subplots()
-    ax.axes.xaxis.set_visible(False)
-    ax.axes.yaxis.set_visible(False)
 
-    ax.plot(values[0], label=labels[0])
-    for i in range(1, len(values)):
-        ax.plot(values[i], label=labels[i])
+    ax.plot(range(1, num_runs+1), scores[0], label=labels[0])
+    for i in range(1, num_agents):
+        ax.plot(range(1, num_runs+1), scores[i], label=labels[i])
 
-    ax.set(ylim=(-15, 15))
-    ax.set_ylabel("Guesses")
-    ax.set_title("Guesses by Word")
+    ax.set(ylim=((min_y - 0.5), (max_y + 0.5)))
+    ax.set_ylabel("Average Score")
+    ax.set_title(f"Agent Scores Over {len(runs)} Runs")
     ax.legend()
 
     plt.savefig(filename)
@@ -216,42 +227,64 @@ def main():
         agents.append(agent)
 
     # Run the agents, gathering the data.
-    agent_results = [None] * len(agents)
-    print(f"Running {len(agents)} agents")
-    with ProcessPoolExecutor(max_workers=8) as executor:
-        future_to_idx = {executor.submit(run_agent, a, args["count"]): i
-            for i, a in enumerate(agents)}
-    for future in as_completed(future_to_idx):
-        idx = future_to_idx[future]
-        try:
-            data = future.result()
-        except Exception as e:
-            print(f"{agents[idx].name} threw exception: {e}")
-        else:
-            agent_results[idx] = data
-            print(f"Agent {data['name']} (index {idx}) completed")
+    runs = args["runs"]
+    run_results = [None] * runs
 
-    # Let's just make sure that each agent ran the same words in the same order.
-    validate_data(agent_results)
+    for run in range(runs):
+        print(f"Run {run+1} of {runs}")
+
+        print(f"  Running {len(agents)} agents")
+        agent_results = [None] * len(agents)
+        with ProcessPoolExecutor(max_workers=8) as executor:
+            future_to_idx = {executor.submit(run_agent, a, args["count"]): i
+                for i, a in enumerate(agents)}
+        for future in as_completed(future_to_idx):
+            idx = future_to_idx[future]
+            try:
+                data = future.result()
+            except Exception as e:
+                print(f"{agents[idx].name} threw exception: {e}")
+            else:
+                agent_results[idx] = data
+                print(f"    Agent {data['name']} (index {idx}) completed")
+
+        # Let's just make sure that each agent ran the same words in the same
+        # order.
+        validate_data(agent_results)
+
+        # Save the data for this run
+        run_results[run] = agent_results
+
+        # Produce CSV and/or bar chart output on a per-run basis:
+        agent_rows = data2rows(agent_results)
+        if args["output"]:
+            file = args["output"]
+            if file.find("%d") >= 0:
+                file = file % run
+            print(f"  Writing {file}")
+            write_csv_output(file, agent_rows)
+
+        if args["bar_chart"]:
+            file = args["bar_chart"]
+            if file.find("%d") >= 0:
+                file = file % run
+            print(f"  Creating bar chart ({file})")
+            create_bar_chart(file, agent_rows)
+
+        # Reset the agents for the next run
+        for agent in agents:
+            agent.reset()
 
     # Process the data.
-    agent_rows = data2rows(agent_results)
-    if args["output"]:
-        print(f"Writing {args['output']}")
-        write_csv_output(args["output"], agent_rows)
-
-    if args["bar_chart"]:
-        print(f"Creating bar chart ({args['bar_chart']})")
-        create_bar_chart(args["bar_chart"], agent_rows)
 
     if args["plot"]:
         print(f"Creating plot ({args['plot']})")
-        create_plot(args["plot"], agent_rows)
+        create_plot(args["plot"], run_results)
 
     if args["show"]:
         import pprint
         pp = pprint.PrettyPrinter(indent=2)
-        pp.pprint(agent_results)
+        pp.pprint(run_results)
 
 
 if __name__ == '__main__':
