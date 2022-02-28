@@ -3,6 +3,8 @@
 This provides BaseAgent, the base class for other Agent implementations.
 """
 
+from random import shuffle
+
 from ..utils import read_words
 
 
@@ -36,6 +38,8 @@ class BaseAgent():
         else:
             self.words = game.words.copy()
 
+        shuffle(self.words)
+
     def __str__(self):
         """Provide a stringification of the object. If a ``name`` parameter
         was given at creation, include that."""
@@ -47,6 +51,7 @@ class BaseAgent():
     def reset(self):
         """Perform a reset of the agent. In the case of the base class, this
         only calls the ``reset`` method on the game object."""
+        shuffle(self.words)
         self.game.reset()
 
     def play_once(self):

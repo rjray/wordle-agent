@@ -43,9 +43,9 @@ class Game():
             self.rng = Random(seed)
 
         if isinstance(words, str):
-            self.words = set(read_words(words))
+            self.words = read_words(words)
         else:
-            self.words = set(words.copy())
+            self.words = words.copy()
 
         if isinstance(answers, str):
             self.answers = read_words(answers)

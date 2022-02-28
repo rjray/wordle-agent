@@ -176,8 +176,12 @@ def create_agent(type, args, game):
 
     return agent
 
-def run_agent(a, count):
-    return a.play(count)
+def run_agent(agent, count):
+    # Reset the agent prior to the run. For some agents, this introduces a
+    # slight amount of extra stochastic nature.
+    agent.reset()
+
+    return agent.play(count)
 
 def main():
     args = parse_command_line()
@@ -270,10 +274,6 @@ def main():
                 file = file % run
             print(f"  Creating bar chart ({file})")
             create_bar_chart(file, agent_rows)
-
-        # Reset the agents for the next run
-        for agent in agents:
-            agent.reset()
 
     # Process the data.
 
