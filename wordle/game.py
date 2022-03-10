@@ -72,11 +72,11 @@ class Game():
 
     def guess(self, guess):
         """Score the agent's guess, per Wordle rules. Returns a 5-element list
-        of values in the range [0 .. 2], where:
+        of values in the range [-1.0, -0.5, 0.0], where:
 
-            0: The letter is not present in the word at all
-            1: The letter is present in the word but in the wrong place
-            2: The letter is present and in the correct place
+            -1.0: The letter is not present in the word at all
+            -0.5: The letter is present in the word but in the wrong place
+            0.0: The letter is present and in the correct place
 
         Throws an error if not in an active game or if the guess is not in
         the list of allowed words."""
@@ -104,9 +104,10 @@ class Game():
                 continue
             elif counts[g] > 0:
                 rtn[i] = -0.5
+                counts[g] -= 1
 
         # If this guess is correct, move the object to a not-playing state:
-        if sum(rtn) == 0.0:
+        if sum(rtn) == 0:
             self.word = None
 
         # Return the score.
