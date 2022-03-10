@@ -86,6 +86,8 @@ class BaseAgent():
                 if sum(score) == 0:
                     result["result"] = 1
                     result["word"] = guess
+                    # Experimental: give a +5 rewards for solving
+                    result["score"] += 5
                     break
                 else:
                     # If we haven't found the word, trim the list down based on
