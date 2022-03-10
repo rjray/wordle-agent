@@ -65,22 +65,23 @@ class SimpleAgent(BaseAgent):
         for ch, i in include:
             words = list(filter(lambda word: word[i] == ch, words))
 
-        # Next, drop all words that contain a letter known to be completely
-        # absent. Unless it matches a letter from the previous step, then don't
-        # skip the word after all.
-        keep = [ch for ch, _ in include]
-        exclude = [guess[i] for i in range(5) if score[i] == -1]
-        for ch in exclude:
-            if ch not in keep:
-                words = list(filter(lambda word: ch not in word, words))
-
-        # Lastly, look for letters that must be present, but not in their
+        # Next, look for letters that must be present, but not in their
         # current position.
         present = [(guess[i], i) for i in range(5) if score[i] == -0.5]
         for ch, i in present:
             words = list(
                 filter(lambda word: ch in word and word[i] != ch, words)
             )
+
+        # Lastly, drop all words that contain a letter known to be completely
+        # absent. Unless it matches a letter from a previous step, then don't
+        # skip the word after all.
+        keep = set([ch for ch, _ in include])
+        keep |= set([ch for ch, _ in present])
+        exclude = [guess[i] for i in range(5) if score[i] == -1]
+        for ch in exclude:
+            if ch not in keep:
+                words = list(filter(lambda word: ch not in word, words))
 
         # In some cases, the actual guess-word can survive to this point. Make
         # sure it isn't in the new list.
