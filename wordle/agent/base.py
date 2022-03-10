@@ -12,7 +12,7 @@ class BaseAgent():
     """The BaseAgent class is a common base-class for the different agents that
     will be developed. It only provides very basic operations."""
 
-    def __init__(self, game, words = None, *, name: str):
+    def __init__(self, game, words=None, *, name: str):
         """Base constructor, to handle basic parts like handling the word list
         and the game instance.
 
@@ -50,7 +50,9 @@ class BaseAgent():
 
     def reset(self):
         """Perform a reset of the agent. In the case of the base class, this
-        only calls the ``reset`` method on the game object."""
+        calls the ``reset`` method on the game object and shuffles the internal
+        copy of the word-list. The word-list is shuffled to introduce a slight
+        variance in behavior of the ``SimpleAgent`` class."""
         shuffle(self.words)
         self.game.reset()
 

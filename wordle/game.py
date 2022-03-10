@@ -18,7 +18,7 @@ class Game():
     play all 2315 game-words in sequence (or randomly), signalling when the
     list of game-words has been exhausted."""
 
-    def __init__(self, answers, words, *, randomize = False, seed = None):
+    def __init__(self, answers, words, *, randomize=False, seed=None):
         """Constructor. Build the basic Game object and set it up for immediate
         use. Stores the word-lists and initializes internal values.
 

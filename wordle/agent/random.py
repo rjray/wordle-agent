@@ -17,7 +17,7 @@ class RandomAgent(SimpleAgent):
     pool of viable guesses. Unlike ``SimpleAgent``, it then selects a new guess
     completely randomly from the pool of new candidate words."""
 
-    def __init__(self, game, words = None, *, name = None, seed = None):
+    def __init__(self, game, words=None, *, name=None, seed=None):
         """Constructor for RandomAgent. Handles the specific parameter ``seed``
         which is not recognized by ``SimpleAgent``.
 

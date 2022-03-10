@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 
-import os, sys
+import os
+import sys
+
 _root_dir = os.path.dirname(__file__)
 sys.path.append(_root_dir)
 
@@ -16,7 +18,7 @@ from wordle.utils import read_words
 
 AGENTS_MAP = {
     "random": ["wordle.agent.random", "RandomAgent"],
-    "simple": ["wordle.agent.simple", "SimpleAgent"]
+    "simple": ["wordle.agent.simple", "SimpleAgent"],
 }
 """A dictionary mapping command-line names of agent classes to the modules that
 are dynamically imported."""
@@ -33,34 +35,71 @@ def parse_command_line():
     parser = argparse.ArgumentParser()
 
     # Set up the arguments:
-    parser.add_argument("-g", "--game-arguments", type=str, action="append",
-                        dest="game",
-                        help="Keyword arguments for the game constructor")
-    parser.add_argument("-a", "--agent", type=str, action="append",
-                        dest="agents", required=True,
-                        help="Specifications of agents to run")
-    parser.add_argument("--answers", type=str, action="append",
-                        help="Specific answer words, or a file name to use")
-    parser.add_argument("--words", type=str, default=DEFAULT_WORDS,
-                        help="File name of allowed guess-words")
-    parser.add_argument("-n", "--count", type=int,
-                        help="Solve only the first <count> words")
-    parser.add_argument("-o", "--output", type=str,
-                        help="Name of file to write comparison data to")
-    parser.add_argument("-s", "--stats", type=str,
-                        help="Name of file to write statistics to")
-    parser.add_argument("-bc", "--bar-chart", type=str,
-                        help="Name of file to write bar graph to")
-    parser.add_argument("-p", "--plot", type=str,
-                        help="Name of file to write plot graph to")
-    parser.add_argument("-r", "--runs", type=int, default=1,
-                        help="Number of complete runs to do for all agents")
-    parser.add_argument("-m", "--max", type=int, default=os.cpu_count(),
-                        help="Maximum concurrent runs of agents")
-    parser.add_argument("--show", action="store_true",
-                        help="If passed, dump data to stdout")
+    parser.add_argument(
+        "-g",
+        "--game-arguments",
+        type=str,
+        action="append",
+        dest="game",
+        help="Keyword arguments for the game constructor",
+    )
+    parser.add_argument(
+        "-a",
+        "--agent",
+        type=str,
+        action="append",
+        dest="agents",
+        required=True,
+        help="Specifications of agents to run",
+    )
+    parser.add_argument(
+        "--answers",
+        type=str,
+        action="append",
+        help="Specific answer words, or a file name to use",
+    )
+    parser.add_argument(
+        "--words",
+        type=str,
+        default=DEFAULT_WORDS,
+        help="File name of allowed guess-words",
+    )
+    parser.add_argument(
+        "-n", "--count", type=int, help="Solve only the first <count> words"
+    )
+    parser.add_argument(
+        "-o", "--output", type=str,
+        help="Name of file to write comparison data to"
+    )
+    parser.add_argument(
+        "-s", "--stats", type=str, help="Name of file to write statistics to"
+    )
+    parser.add_argument(
+        "-bc", "--bar-chart", type=str, help="Name of bar graph file to write"
+    )
+    parser.add_argument(
+        "-p", "--plot", type=str, help="Name of file to write plot graph to"
+    )
+    parser.add_argument(
+        "-r",
+        "--runs",
+        type=int,
+        default=1,
+        help="Number of complete runs to do for all agents",
+    )
+    parser.add_argument(
+        "-m",
+        "--max",
+        type=int,
+        default=os.cpu_count(),
+        help="Maximum concurrent runs of agents",
+    )
+    parser.add_argument(
+        "--show", action="store_true", help="If passed, dump data to stdout"
+    )
 
     return vars(parser.parse_args())
+
 
 def validate_data(data, run):
     if len(data) < 2:
@@ -72,12 +111,15 @@ def validate_data(data, run):
         thisname = cmp["name"]
         thishist = cmp["history"]
         if len(thishist) != len(basehist):
-            raise Exception(f"{thisname} (run {run}):  history length mismatch")
+            raise Exception(
+                f"{thisname} (run {run}):  history length mismatch"
+            )
         for i in range(len(basehist)):
             if basehist[i]["word"] != thishist[i]["word"]:
                 raise Exception(f"{thisname} (run {run}): word {i} mismatch")
 
     return
+
 
 def data2rows(data):
     rows = []
@@ -88,7 +130,7 @@ def data2rows(data):
     rows.append(row)
 
     for i in range(len(data[0]["history"])):
-        row = [i+1, data[0]["history"][i]["word"]]
+        row = [i + 1, data[0]["history"][i]["word"]]
         for record in data:
             result = record["history"][i]["result"]
             guesses = len(record["history"][i]["guesses"])
@@ -98,6 +140,7 @@ def data2rows(data):
 
     return rows
 
+
 def write_csv_output(filename, rows):
     with open(filename, "w", newline="") as f:
         csv_writer = csv.writer(f, delimiter=",")
@@ -105,21 +148,21 @@ def write_csv_output(filename, rows):
 
     return
 
+
 def create_bar_chart(filename, rows):
     width = len(rows[0]) - 2
     labels = []
     values = []
     for i in range(width):
-        labels.append(rows[0][i+2])
-        values.append([r[i+2] for r in rows[1:]])
+        labels.append(rows[0][i + 2])
+        values.append([r[i + 2] for r in rows[1:]])
 
     _, ax = plt.subplots()
 
     words = [row[1] for row in rows[1:]]
     ax.bar(words, values[0], label=labels[0])
     for i in range(1, len(values)):
-        ax.bar(words, values[i], label=labels[i],
-               bottom=values[i-1])
+        ax.bar(words, values[i], label=labels[i], bottom=values[i - 1])
 
     if len(values) <= 25:
         plt.xticks(rotation=45, fontsize="small")
@@ -131,6 +174,7 @@ def create_bar_chart(filename, rows):
     ax.legend()
 
     plt.savefig(filename)
+
 
 def create_plot(filename, runs):
     num_runs = len(runs)
@@ -153,9 +197,9 @@ def create_plot(filename, runs):
 
     _, ax = plt.subplots()
 
-    ax.plot(range(1, num_runs+1), scores[0], label=labels[0])
+    ax.plot(range(1, num_runs + 1), scores[0], label=labels[0])
     for i in range(1, num_agents):
-        ax.plot(range(1, num_runs+1), scores[i], label=labels[i])
+        ax.plot(range(1, num_runs + 1), scores[i], label=labels[i])
 
     ax.set(ylim=((min_y - 0.5), (max_y + 0.5)))
     ax.set_ylabel("Average Score")
@@ -163,6 +207,7 @@ def create_plot(filename, runs):
     ax.legend()
 
     plt.savefig(filename)
+
 
 def create_agent(type, args, game):
     # Get the class to use:
@@ -178,6 +223,7 @@ def create_agent(type, args, game):
 
     return agent
 
+
 def run_agent(agent, run, count):
     # Reset the agent prior to the run. For some agents, this introduces a
     # slight amount of extra stochastic nature.
@@ -187,6 +233,7 @@ def run_agent(agent, run, count):
     result = agent.play(count)
     print(f"  Finished: agent {agent}, run {run+1}")
     return result
+
 
 def main():
     args = parse_command_line()
@@ -212,7 +259,7 @@ def main():
             key, value = pair.split("=")
             if value in TF:
                 value = TF[value]
-            if re.match(value, "^\d+$"):
+            if re.match(value, r"^\d+$"):
                 value = int(value)
             game_args[key] = value
 
@@ -228,7 +275,7 @@ def main():
             key, value = pair.split("=")
             if value in TF:
                 value = TF[value]
-            if re.match(value, "^\d+$"):
+            if re.match(value, r"^\d+$"):
                 value = int(value)
             agent_args[key] = value
 
@@ -288,9 +335,10 @@ def main():
 
     if args["show"]:
         import pprint
+
         pp = pprint.PrettyPrinter(indent=2)
         pp.pprint(run_results)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

@@ -27,7 +27,7 @@ class SimpleAgent(BaseAgent):
     pool of viable guesses. It essentially plays the game in "hard mode", even
     though the ``Game`` class doesn't enforce hard mode play."""
 
-    def __init__(self, game, words = None, *, name = None):
+    def __init__(self, game, words=None, *, name=None):
         """Constructor for SimpleAgent. Just passes through to the superclass.
 
         Positional parameters:

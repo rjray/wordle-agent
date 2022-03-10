@@ -17,6 +17,7 @@ def load_json(file):
 
     return data
 
+
 def save_json(file, data):
     """A simple helper-function to save ``data`` as JSON to the parameter
     ``file``."""
@@ -29,7 +30,7 @@ def save_json(file, data):
 class Trainer():
     def __init__(self, game, base="."):
         """Class constructor. Takes two positional arguments:
-        
+
             game: An instance of wordle.game.Game that is used for the word
                   lists.
             base: A string specifying the path into which the various files
@@ -108,6 +109,7 @@ def main():
     trainer.create_all_files()
 
     return
+
 
 if __name__ == '__main__':
     main()
