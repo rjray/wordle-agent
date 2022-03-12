@@ -5,7 +5,7 @@ This provides BaseAgent, the base class for other Agent implementations.
 
 from random import shuffle
 
-from ..utils import read_words
+from ..shared.words import read_words
 
 
 class BaseAgent():

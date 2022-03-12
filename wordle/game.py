@@ -8,7 +8,7 @@ play as many games as there are answer words.
 from collections import Counter
 from random import Random
 
-from .utils import read_words
+from .shared.words import read_words
 
 
 class Game():

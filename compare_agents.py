@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt
 import re
 
 from wordle.game import Game
-from wordle.utils import read_words
+from wordle.shared.words import read_words
 
 AGENTS_MAP = {
     "random": ["wordle.agent.random", "RandomAgent"],

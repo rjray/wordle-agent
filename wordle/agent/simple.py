@@ -9,7 +9,7 @@ from itertools import product
 from operator import itemgetter
 
 from .base import BaseAgent
-from ..utils import letter_freq
+from ..shared.words import letter_freq
 
 
 def score(word: str):

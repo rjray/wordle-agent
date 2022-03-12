@@ -2,8 +2,7 @@
 
 This package contains:
 
-game: The class that plays the game from the Wordle side, to be callable by the
-      agents.
+words: Shared utility functions around the words themselves.
 
 """
 
