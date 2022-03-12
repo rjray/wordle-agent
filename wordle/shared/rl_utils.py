@@ -4,6 +4,7 @@ This module provides code that is shared between the various RL-based agents.
 """
 
 from collections import defaultdict
+import copy
 import json
 import numpy as np
 from collections.abc import Callable
@@ -30,11 +31,16 @@ class Qsa(defaultdict):
 
         super().__init__(lambda: np.zeros(num_actions))
         self.length = num_actions
+        self.counts = defaultdict(int)
 
         if file:
             self.load(file)
 
         return
+
+    def visit(self, key: tuple) -> None:
+        """Increment the visitation count of the given `key` (state)."""
+        self.counts[key] += 1
 
     def load(self, file: str):
         """Load an existing Qsa representation from the given `file`, in JSON
@@ -81,29 +87,57 @@ class Qsa(defaultdict):
 
         return self
 
+    def snapshot(self) -> dict:
+        """Create a snapshot of the object's current keys and values. Discards
+        all object-level information and returns an ordinary `dict` instance.
+        Returned value is a deep copy, so that further updates to `self` are
+        not reflected in the copy."""
 
-def createEpsilonPolicy(Q: Qsa, epsilon: float) -> Callable[[tuple], int]:
-    """Create an ε-greedy policy function based on the given `Q(s,a)` function
-    (a `Qsa` instance) and value `epsilon`. The return value is a function that
-    takes a state as input and returns the action-index for the action chosen
-    randomly according to the ε-weighted selection."""
+        return copy.deepcopy(dict(self))
 
-    def policy_fn(state):
-        probabilities = np.ones(Q.length, dtype=float) * epsilon / Q.length
-        best_action = np.argmax(Q[state])
-        probabilities[best_action] += (1. - epsilon)
+    def statistics(self) -> dict:
+        """Return a structure of some basic numbers for this Qsa instance. Keys
+        (currently) are:
 
-        return np.random.choice(Q.length, p=probabilities)
+            `states`: Total number of states in the object (states visited at
+            least once)
+            `visits`: A dictionary indexed by state reporting how many times
+            that state was visited
+            `avg_visits`: The `visits` value divided by the `states` value
+        """
 
-    return policy_fn
+        stats = {}
+        stats["states"] = len(self)
+        stats["visits"] = dict(self.counts)
+        stats["avg_visits"] = sum(self.counts.values()) / len(self)
 
+        return stats
 
-def createMaximizeValuePolicy(Q: Qsa) -> Callable[[tuple], int]:
-    """Create a policy around the given `Q(s,a)` function (a `Qsa` instance)
-    that always returns the action-index corresponding to the best value among
-    the actions at the given state."""
+    def createEpsilonPolicy(self, epsilon: float) -> Callable[[tuple], int]:
+        """Create an ε-greedy policy function based on the `Q(s,a)` function
+        encapsulated by `self` and value `epsilon`. The return value is a
+        function that takes a state as input and returns the action-index for
+        the action chosen randomly according to the ε-weighted selection."""
 
-    def policy_fn(state):
-        return np.argmax(Q[state])
+        Q = self
 
-    return policy_fn
+        def policy_fn(state):
+            probabilities = np.ones(Q.length, dtype=float) * epsilon / Q.length
+            best_action = np.argmax(Q[state])
+            probabilities[best_action] += (1.0 - epsilon)
+
+            return np.random.choice(Q.length, p=probabilities)
+
+        return policy_fn
+
+    def createMaximizeValuePolicy(self) -> Callable[[tuple], int]:
+        """Create a policy around the `Q(s,a)` function encapsulated by `self`
+        that always returns the action-index corresponding to the best value
+        among the actions at the given state."""
+
+        Q = self
+
+        def policy_fn(state):
+            return np.argmax(Q[state])
+
+        return policy_fn
