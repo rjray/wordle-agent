@@ -41,12 +41,11 @@ class Trainer():
     def local_file(self, file):
         return file if os.path.isabs(file) else os.path.join(self.base, file)
 
-    def create_letter_pos(self, file):
+    def create_letter_pos(self, file=None):
         answers = self.game.answers
         ans_count = len(answers)
         base = ord("a")
         counters = [Counter() for _ in range(5)]
-        fname = self.local_file(file)
 
         for word in answers:
             for i, c in enumerate(word):
@@ -57,17 +56,18 @@ class Trainer():
             for ch, count in counter.items():
                 probabilities[ord(ch) - base][i] = count / ans_count
 
-        save_json(fname, probabilities)
+        if file:
+            fname = self.local_file(file)
+            save_json(fname, probabilities)
 
         return probabilities
 
     def load_letter_pos(self, file):
         return load_json(self.local_file(file))
 
-    def create_tglp_table(self, green_probabilities, file):
+    def create_tglp_table(self, green_probabilities, file=None):
         tglp = {}
         base = ord("a")
-        fname = self.local_file(file)
 
         for word in self.game.words:
             total = 0.0
@@ -76,7 +76,9 @@ class Trainer():
 
             tglp[word] = total
 
-        save_json(fname, tglp)
+        if file:
+            fname = self.local_file(file)
+            save_json(fname, tglp)
 
         return tglp
 
