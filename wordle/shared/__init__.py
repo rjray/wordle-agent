@@ -2,6 +2,8 @@
 
 This package contains:
 
+rl_utils: Shared utility functions for the Reinforcement Learning agents.
+
 words: Shared utility functions around the words themselves.
 
 """
