@@ -25,17 +25,17 @@ class SimpleAgent(BaseAgent):
     """The SimpleAgent is a learning-free agent that plays based on a
     heuristic of always applying the result from the latest guess to reduce the
     pool of viable guesses. It essentially plays the game in "hard mode", even
-    though the ``Game`` class doesn't enforce hard mode play."""
+    though the `Game` class doesn't enforce hard mode play."""
 
     def __init__(self, game, words=None, *, name=None):
         """Constructor for SimpleAgent. Just passes through to the superclass.
 
         Positional parameters:
 
-            game: An instance of the wordle.game.Game class
-            words: The allowed (guessable) words, a list or a file name. If not
-                   given, the superclass constructor takes the list of words
-                   from the ``game`` parameter.
+            `game`: An instance of the wordle.game.Game class
+            `words`: The allowed (guessable) words, a list or a file name. If
+            not given, the superclass constructor takes the list of words
+            from the `game` parameter.
 
         Keyword parameters:
 
@@ -45,54 +45,8 @@ class SimpleAgent(BaseAgent):
 
         super().__init__(game, words, name=name)
 
-    def apply_guess(self, words_in, guess, score):
-        """Filter a new list of viable words based on the rules of this agent.
-        For this agent, the filtering rules are essentially hard-mode playing.
-        The list is winnowed down by applying simple logic around the letter
-        scores from the guess.
-
-        Parameters:
-
-            words_in: A list of the current candidate words
-            guess: The most-recent guess made by the agent
-            score: The list of per-letter scores for the guess
-        """
-
-        words = words_in.copy()
-
-        # First, get all the words that match letters in correct positions.
-        include = [(guess[i], i) for i in range(5) if score[i] == 0]
-        for ch, i in include:
-            words = list(filter(lambda word: word[i] == ch, words))
-
-        # Next, look for letters that must be present, but not in their
-        # current position.
-        present = [(guess[i], i) for i in range(5) if score[i] == -0.5]
-        for ch, i in present:
-            words = list(
-                filter(lambda word: ch in word and word[i] != ch, words)
-            )
-
-        # Lastly, drop all words that contain a letter known to be completely
-        # absent. Unless it matches a letter from a previous step, then don't
-        # skip the word after all.
-        keep = set([ch for ch, _ in include])
-        keep |= set([ch for ch, _ in present])
-        exclude = [guess[i] for i in range(5) if score[i] == -1]
-        for ch in exclude:
-            if ch not in keep:
-                words = list(filter(lambda word: ch not in word, words))
-
-        # In some cases, the actual guess-word can survive to this point. Make
-        # sure it isn't in the new list.
-        words_set = set(words)
-        if guess in words_set:
-            words.remove(guess)
-
-        return words
-
     def select_guess(self, guesses):
-        """Return a selected word from the list of possible guesses. For this
+        """Return a selected word from the list of possible `guesses`. For this
         agent, this sorts the list by uniqueness of letters and then picks the
         first in the resulting list."""
 
@@ -103,7 +57,7 @@ class SimpleAgent(BaseAgent):
         return weighted[0][0]
 
     def get_candidate_words(self, words):
-        """Create a list of candidate words from the given set of words. Uses
+        """Create a list of candidate words from the given list of words. Uses
         the frequency of the letters to find words that are created from the
         most-frequent letters possible."""
 
