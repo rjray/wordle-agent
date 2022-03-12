@@ -135,3 +135,48 @@ class SimpleAgent(BaseAgent):
                 break
 
         return candidates
+
+    def play_once(self):
+        """Play a single word, creating and returning some data from the
+        process (including the result)."""
+
+        # Start by making a local copy of the words list.
+        words = self.words.copy()
+        result = {"guesses": [], "word": None, "result": 0, "score": 0.0}
+
+        for round in range(6):
+            # For each of the 6 potential guesses, get a list of candidate
+            # guesses from the current set of words. The get_candidate_words()
+            # call will be increasingly smaller/shorter as words shrinks each
+            # iteration.
+            word_list = self.get_candidate_words(words)
+            if not word_list:
+                # This should not happen! But it has in the past, so...
+                print(f"Round {round+1}: have run out of candidate words.")
+                break
+            else:
+                guess = self.select_guess(word_list)
+
+                # Have the game score our guess against the current word.
+                score = self.game.guess(guess)
+                result["guesses"].append((guess, score))
+                result["score"] += sum(score)
+
+                # Have we found the word? A sum of 0 will mean that we have.
+                if sum(score) == 0:
+                    result["result"] = 1
+                    result["word"] = guess
+                    # Experimental: give a +5 rewards for solving
+                    result["score"] += 5
+                    break
+                else:
+                    # If we haven't found the word, trim the list down based on
+                    # our guess and its score.
+                    words = self.apply_guess(words, guess, score)
+
+        if not result["word"]:
+            # If we didn't find it within the given number of tries, mark it as
+            # a "loss".
+            result["word"] = self.game.word
+
+        return result
