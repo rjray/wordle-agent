@@ -6,7 +6,6 @@ learning agents.
 
 from collections import Counter
 import json
-import numpy as np
 import os.path
 
 
@@ -83,28 +82,6 @@ class Trainer():
 
     def load_tglp_table(self, file):
         return load_json(self.local_file(file))
-
-    def save_qsa_json(self, q_fn, file):
-        tmp = dict()
-
-        for k, v in q_fn.items():
-            key = ",".join(map(str, k))
-            val = list(v)
-            tmp[key] = val
-
-        save_json(self.local_file(file), tmp)
-
-        return
-
-    def load_qsa_json(self, qsa, file):
-        tmp = load_json(self.local_file(file))
-
-        for k, v in tmp.items():
-            key = tuple(map(int, k.split(",")))
-            val = np.array(v)
-            qsa[key] = val
-
-        return qsa
 
     def create_all_files(self):
         letter_pos = self.create_letter_pos("letter_pos.json")
