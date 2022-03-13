@@ -4,10 +4,10 @@ This module provides code that is shared between the various RL-based agents.
 """
 
 from collections import defaultdict
+from collections.abc import Callable
 import copy
 import json
 import numpy as np
-from collections.abc import Callable
 
 
 class Qsa(defaultdict):
