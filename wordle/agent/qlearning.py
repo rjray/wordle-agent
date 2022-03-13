@@ -24,7 +24,8 @@ class QLearningAgent(BaseRLAgent):
         # Start by making a local copy of the words list.
         words = self.words.copy()
         self.guesses.clear()
-        result = {"guesses": [], "word": None, "result": 0, "score": 0.0}
+        result = {"guesses": [], "word": None, "result": 0,
+                  "score": 0.0, "learning_delta": 0.0}
         # The starting state, within the simulation.
         state = (0,)
         # This is the function we'll use to determine actions.
@@ -63,6 +64,7 @@ class QLearningAgent(BaseRLAgent):
                     reward + self.gamma * self.Q[next_state][best_next_action]
                 td_delta = td_target - self.Q[state][action]
                 self.Q[state][action] += self.alpha * td_delta
+                result["learning_delta"] += abs(self.alpha * td_delta)
 
             if done:
                 break
