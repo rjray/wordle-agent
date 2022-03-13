@@ -9,16 +9,7 @@ from itertools import product
 from operator import itemgetter
 
 from .base import BaseAgent
-from ..shared.words import letter_freq
-
-
-def score(word: str):
-    """Calculate a simple "score" for a word for the sake of sorting candidate
-    guesses. For this agent, the score is just the number of distinct letters
-    in the word. For example, "taste" has a score of 4 while "tears" has a
-    score of 5."""
-
-    return len(set(word))
+from ..shared.words import letter_freq, score
 
 
 class SimpleAgent(BaseAgent):
