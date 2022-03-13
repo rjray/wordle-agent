@@ -110,7 +110,7 @@ class BaseAgent():
             f"Class {self.__class__.__name__} has not defined play_once()"
         )
 
-    def play(self, n):
+    def play(self, n=0):
         """Play the full game. Will run all the words provided as answers in
         the game object (based on how it was instantiated), unless the `n`
         parameter is passed and is non-zero. If `n` is passed, only the first
