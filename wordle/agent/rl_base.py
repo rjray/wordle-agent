@@ -6,10 +6,12 @@ implement learning approaches.
 
 from .base import BaseAgent
 from ..shared.rl_utils import Qsa
-from ..shared.rl_actions import guess_by_random, guess_by_tglp
+from ..shared.rl_actions import guess_by_random, guess_by_tglp, \
+    guess_by_exploration
 from ..training.trainer import Trainer
 
 ACTION_TABLE = [
+    guess_by_exploration,
     guess_by_tglp,
     guess_by_random,
 ]
