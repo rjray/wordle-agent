@@ -30,6 +30,9 @@ class QLearningAgent(BaseRLAgent):
         state = (0,)
         # This is the function we'll use to determine actions.
         policy = self.epsilon_greedy if self.training else self.max_value
+        # Start out by marking our start-state as visited.
+        if self.training:
+            self.Q.visit(state)
 
         for round in range(6):
             action = policy(state)
@@ -39,6 +42,7 @@ class QLearningAgent(BaseRLAgent):
             score = self.game.guess(guess)
             result["guesses"].append((guess, score))
             result["score"] += sum(score)
+            next_state = tuple(score)
 
             # Calculate this guess's reward and next_state
             reward = sum(score)
@@ -58,16 +62,19 @@ class QLearningAgent(BaseRLAgent):
 
             # Perform the updating of Q if we're training:
             if self.training:
-                next_state = tuple(score)
                 best_next_action = np.argmax(self.Q[next_state])
                 td_target = \
                     reward + self.gamma * self.Q[next_state][best_next_action]
                 td_delta = td_target - self.Q[state][action]
                 self.Q[state][action] += self.alpha * td_delta
                 result["learning_delta"] += abs(self.alpha * td_delta)
+                # If training, track the visits to each state
+                self.Q.visit(next_state)
 
             if done:
                 break
+
+            state = next_state
 
         if not done:
             # If we didn't find it within the given number of tries, mark it as
