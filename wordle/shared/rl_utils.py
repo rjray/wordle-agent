@@ -55,7 +55,7 @@ class Qsa(defaultdict):
                 # Each key in the JSON data is the original tuple that has had
                 # the numbers converted to strings, then all joined on ",".
                 # This reverses that process.
-                key = tuple(map(int, k.split(",")))
+                key = tuple(map(float, k.split(",")))
                 # Likewise, the values in the JSON data are ordinary lists that
                 # were converted from numpy arrays. Re-create them as np.array
                 # instances.
