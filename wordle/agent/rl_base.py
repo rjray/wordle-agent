@@ -126,6 +126,20 @@ class BaseRLAgent(BaseAgent):
         self.Q.save(file)
         return
 
+    def calculate_delta(self, before, after):
+        """Calculate the total difference in the `Q(s,a)` function between two
+        snapshots, `before` and `after`."""
+
+        delta = 0.0
+        default = [0] * len(self.action_table)
+
+        for key, val in after.items():
+            before_val = before.get(key, default)
+            delta += sum(map(lambda t: abs(t[1] - t[0]),
+                         zip(before_val, val)))
+
+        return delta
+
     def train(self):
         """Train this agent instance based on the learning algorithm in the
         implementation class's `play_once()` method.
@@ -147,14 +161,14 @@ class BaseRLAgent(BaseAgent):
         # First determine how many total answer-words there are, and draw the
         # 75/25 line. We only need train_words, as the game object will run
         # through the remainder for us automatically.
-        train_words = int(len(self.game.answers) * 0.75)
+        training_word_count = int(len(self.game.answers) * 0.75)
 
         # Next, take a snapshot of Q before training so as to measure the
         # changes after training.
         pre_snapshot = self.Q.snapshot()
 
         self.training_mode(True)
-        training_results = self.play(train_words)
+        training_results = self.play(training_word_count)
 
         # Take another snapshot after the training:
         post_snapshot = self.Q.snapshot()
