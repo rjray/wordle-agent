@@ -1,11 +1,11 @@
 """CS 5033: Machine Learning Reinforcement Learning Project
 
-Package wordle
+Package wordle.training
 
 This package contains:
 
-game: The class that plays the game from the Wordle side, to be callable by the
-      agents.
+trainer: A class and support functions for creating/loading training-related
+data
 
 """
 

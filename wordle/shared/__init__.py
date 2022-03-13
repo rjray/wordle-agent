@@ -1,10 +1,14 @@
 """CS 5033: Machine Learning Reinforcement Learning Project
 
+Package wordle.shared
+
 This package contains:
 
-rl_utils: Shared utility functions for the Reinforcement Learning agents.
+rl_actions: The action-functions used by Reinforcement Learning agents
 
-words: Shared utility functions around the words themselves.
+rl_utils: Shared utility functions for the Reinforcement Learning agents
+
+words: Shared utility functions around the words themselves
 
 """
 
