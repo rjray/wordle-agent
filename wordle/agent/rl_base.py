@@ -140,14 +140,14 @@ class BaseRLAgent(BaseAgent):
 
         return delta
 
-    def train(self):
+    def train(self, train_pct=75):
         """Train this agent instance based on the learning algorithm in the
         implementation class's `play_once()` method.
 
-        Training is done by running the first 75% of the words while actively
-        updating the Q function. Once this is done, the remaining 25% of words
-        are run and the data gathered (as if from a "full" run) for evaluation
-        of the agent.
+        Training is done by running the first part of the words while actively
+        updating the Q function. Once this is done, the remaining words are run
+        and the data gathered (as if from a "full" run) for evaluation of the
+        agent.
 
         Note that this does not actively call `reset()` on the encapsulated
         `Game` instance, either before or after training. This is so that
@@ -156,12 +156,19 @@ class BaseRLAgent(BaseAgent):
 
         The return value is a data structure that summarizes the learning and
         performance of the agent.
+
+        Parameters:
+
+            `train_pct`: An integer indicating what percentage of the words
+            should be used for training. The remainder from this will be used
+            to evaluate the agent after training is complete. Defaults to 75.
         """
 
         # First determine how many total answer-words there are, and draw the
-        # 75/25 line. We only need train_words, as the game object will run
-        # through the remainder for us automatically.
-        training_word_count = int(len(self.game.answers) * 0.75)
+        # train/test line. We only need training_word_count, as the game object
+        # will run through the remainder for us automatically.
+        train_pct /= 100
+        training_word_count = int(len(self.game.answers) * train_pct)
 
         # Next, take a snapshot of Q before training so as to measure the
         # changes after training.
