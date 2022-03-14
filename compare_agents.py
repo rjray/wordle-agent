@@ -17,7 +17,9 @@ from wordle.game import Game
 from wordle.shared.words import read_words
 
 AGENTS_MAP = {
+    "qlearning": ["wordle.agent.qlearning", "QLearningAgent"],
     "random": ["wordle.agent.random", "RandomAgent"],
+    "sarsa": ["wordle.agent.sarsa", "SarsaAgent"],
     "simple": ["wordle.agent.simple", "SimpleAgent"],
 }
 """A dictionary mapping command-line names of agent classes to the modules that
@@ -92,7 +94,7 @@ def parse_command_line():
         "--max",
         type=int,
         default=os.cpu_count(),
-        help="Maximum concurrent runs of agents",
+        help=f"Maximum concurrent runs of agents (default {os.cpu_count()})",
     )
     parser.add_argument(
         "--show", action="store_true", help="If passed, dump data to stdout"
@@ -255,7 +257,8 @@ def main():
     # Set up keyword arguments (if any) for the Game instances.
     game_args = {}
     if args["game"]:
-        for pair in args["game"]:
+        gameargs = ",".join(args["game"]).split(",")
+        for pair in gameargs:
             key, value = pair.split("=")
             if value in TF:
                 value = TF[value]
@@ -269,8 +272,7 @@ def main():
         spec = agent_spec.split(",")
         agent_type = spec[0]
         agent_args = {}
-        # This is a default identifying string, in case no name is given
-        # agent_args["name"] = f"agent{len(agents)}"
+
         for pair in spec[1:]:
             key, value = pair.split("=")
             if value in TF:
