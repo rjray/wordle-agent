@@ -259,7 +259,7 @@ def main():
             key, value = pair.split("=")
             if value in TF:
                 value = TF[value]
-            if re.match(value, r"^\d+$"):
+            elif re.match(r"^\d+$", value):
                 value = int(value)
             game_args[key] = value
 
@@ -275,7 +275,7 @@ def main():
             key, value = pair.split("=")
             if value in TF:
                 value = TF[value]
-            if re.match(value, r"^\d+$"):
+            elif re.match(r"^\d+$", value):
                 value = int(value)
             agent_args[key] = value
 
