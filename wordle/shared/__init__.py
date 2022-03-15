@@ -4,6 +4,8 @@ Package wordle.shared
 
 This package contains:
 
+datapoint: The class and support functions for training data-points
+
 rl_actions: The action-functions used by Reinforcement Learning agents
 
 rl_utils: Shared utility functions for the Reinforcement Learning agents
