@@ -26,12 +26,6 @@ class SarsaAgent(BaseRLAgent):
                   "score": 0.0, "learning_delta": 0.0}
         # The starting state, within the simulation.
         state = (0,)
-        # This is the function we'll use to determine actions.
-        # policy = self.epsilon_greedy if self.training else self.max_value
-        if self.training:
-            policy = self.Q.createEpsilonPolicy(self.epsilon)
-        else:
-            policy = self.Q.createMaximizeValuePolicy()
 
         # Start out by marking our start-state as visited.
         if self.training:
@@ -39,7 +33,7 @@ class SarsaAgent(BaseRLAgent):
 
         # For Sarsa, we get the action before the start of the loop and will
         # update it within the loop as we do for state.
-        action = policy(state)
+        action = self.policy(state)
 
         for round in range(6):
             guess = self.action_table[action](self, words)
@@ -66,7 +60,7 @@ class SarsaAgent(BaseRLAgent):
                 # our guess and its score.
                 words = self.apply_guess(words, guess, score)
 
-            next_action = policy(next_state)
+            next_action = self.policy(next_state)
 
             # Perform the updating of Q if we're training:
             if self.training:

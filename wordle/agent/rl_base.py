@@ -213,6 +213,15 @@ class BaseRLAgent(BaseAgent):
             "learning_delta_rms": learning_delta_rms,
         }
 
+    def play(self, n=0):
+        # This is the function we'll use to determine actions.
+        if self.training:
+            self.policy = self.Q.createEpsilonPolicy(self.epsilon)
+        else:
+            self.policy = self.Q.createMaximizeValuePolicy()
+
+        return super().play(n)
+
     def reset(self):
         self.Q.reset()
         super().reset()
