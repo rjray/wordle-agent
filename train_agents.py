@@ -30,6 +30,9 @@ AGENTS_CODE = {}
 TT_SPLIT = 75
 """The default training/testing split, training percentage."""
 
+ALPHA_RANGE = [0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5]
+EPSILON_RANGE = [0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5]
+
 TF = {"True": True, "False": False}
 DEFAULT_ANSWERS = os.path.join(_root_dir, "data/answers.txt")
 DEFAULT_WORDS = os.path.join(_root_dir, "data/words.txt")
@@ -236,11 +239,11 @@ def main():
     agents = []
     if args["spread"]:
         for agent_type, agent_args, game in agent_specs:
-            for epsilon in range(1, 11):
-                for alpha in range(1, 11):
+            for epsilon in EPSILON_RANGE:
+                for alpha in ALPHA_RANGE:
                     args_copy = agent_args.copy()
-                    args_copy["alpha"] = alpha * 0.05
-                    args_copy["epsilon"] = epsilon * 0.05
+                    args_copy["alpha"] = alpha
+                    args_copy["epsilon"] = epsilon
                     args_copy["gamma"] = 0.9
                     agents.append(create_agent(agent_type, args_copy, game))
     else:
