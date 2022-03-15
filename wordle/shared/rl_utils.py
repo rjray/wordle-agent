@@ -10,7 +10,7 @@ import json
 import numpy as np
 
 
-class Qsa(defaultdict):
+class Qsa(dict):
     """The Qsa class implements the data structure that is used to represent
     the `Q(s,a)` function used in both Sarsa and Q-Learning. A Qsa instance
     will be able to handle the very basic functions, including saving and
@@ -29,7 +29,6 @@ class Qsa(defaultdict):
             will be read.
         """
 
-        # super().__init__(lambda: np.zeros(num_actions))
         self.length = num_actions
         self.counts = defaultdict(int)
 
@@ -39,7 +38,8 @@ class Qsa(defaultdict):
         return
 
     def __missing__(self, key: tuple):
-        return np.zeros(self.length)
+        self[key] = np.zeros(self.length)
+        return self[key]
 
     def visit(self, key: tuple) -> None:
         """Increment the visitation count of the given `key` (state)."""
