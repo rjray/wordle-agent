@@ -10,9 +10,11 @@ import argparse
 from concurrent.futures import ProcessPoolExecutor, as_completed
 import csv
 from importlib import import_module
+import itertools
 import re
 
 from wordle.game import Game
+from wordle.shared.datapoint import Datapoint, DATAPOINT_FIELDS
 from wordle.shared.words import read_words
 
 AGENTS_MAP = {
@@ -86,7 +88,11 @@ def parse_command_line():
         help="If given, run all specified agents on the 10x10 spread"
     )
     parser.add_argument(
-        "-s", "--stats", type=str, help="Name of CSV file for statistics"
+        "-o",
+        "--output",
+        type=str,
+        default="train_agents.csv",
+        help="Name of CSV file for statistics"
     )
     parser.add_argument(
         "-tp",
@@ -95,18 +101,25 @@ def parse_command_line():
         default=TT_SPLIT,
         help=f"Training part of train/test split (default is {TT_SPLIT})"
     )
+    parser.add_argument(
+        "-d",
+        "--data",
+        type=str,
+        default="./learning",
+        help=f"Directory in which to write Q function data (./learning)"
+    )
 
     return vars(parser.parse_args())
 
 
-def write_csv_output(filename, rows, labels=None):
+def write_csv_output(filename, rows):
     with open(filename, "w", newline="") as f:
-        csv_writer = csv.writer(f, delimiter=",")
+        writer = csv.DictWriter(
+            f, delimiter=",", fieldnames=DATAPOINT_FIELDS
+        )
 
-        if labels:
-            csv_writer.writerow(labels)
-
-        csv_writer.writerows(rows)
+        writer.writeheader()
+        writer.writerows(rows)
 
     return
 
@@ -126,8 +139,45 @@ def create_agent(type, args, game):
     return agent
 
 
-def train_agent(agent, runs):
-    pass
+def train_agent(agent, agent_id, train_pct, runs, pos, idx, total, dir):
+    datapoints = []
+
+    msg = f"{agent_id} starting ({agent} #{pos}, {idx} of {total})\n" + \
+        f"\truns:    {runs}\n" + \
+        f"\talpha:   {agent.alpha}\n" + \
+        f"\tgamma:   {agent.gamma}\n" + \
+        f"\tepsilon: {agent.epsilon}\n"
+    print(msg)
+
+    for run in range(runs):
+        # Reset the agent prior to the run. For some agents, this introduces a
+        # slight amount of extra stochastic nature.
+        agent.reset()
+        result = agent.train(train_pct)
+
+        point = Datapoint(
+            id=agent_id,
+            agent=f"{agent}",
+            alpha=agent.alpha,
+            gamma=agent.gamma,
+            epsilon=agent.epsilon,
+            training_index=run,
+            test_performance=result["test_results"]["result"],
+            num_states_visited=result["training_stats"]["states"],
+            avg_visits_per_state=result["training_stats"]["avg_visits"],
+            avg_score=result["test_results"]["score_avg"],
+            avg_guesses=result["test_results"]["guess_avg"],
+            training_delta_raw=result["learning_delta_raw"],
+            training_delta_rms=result["learning_delta_rms"],
+        )
+        datapoints.append(point)
+
+    print(f"{agent_id} finished")
+    datafile = os.path.join(dir, agent_id + ".json")
+    print(f"{agent_id} writing {datafile}")
+    agent.Q.save(datafile)
+
+    return datapoints
 
 
 def main():
@@ -135,6 +185,11 @@ def main():
 
     if args["max"] < 1:
         raise Exception("Cannot specify --max as less than 1")
+
+    # Validate and set up the directory to write learning Q-function data to.
+    dir = os.path.abspath(args["data"])
+    if not os.path.isdir(dir):
+        os.makedirs(dir, 0o755)
 
     # Handle the answers/words arguments.
     words_list = read_words(args["words"])
@@ -145,7 +200,8 @@ def main():
     # to have "randomize" set to True.
     game_args = {"randomize": True}
     if args["game"]:
-        for pair in args["game"]:
+        gameargs = ",".join(args["game"]).split(",")
+        for pair in gameargs:
             key, value = pair.split("=")
             if value in TF:
                 value = TF[value]
@@ -189,13 +245,14 @@ def main():
     else:
         for spec in agent_specs:
             agents.append(create_agent(*spec))
-    count_per_agent = len(agents) / len(agent_specs)
+    count_per_agent = int(len(agents) / len(agent_specs))
 
     # Spawn the training process for each agent in the agents list.
+    tot = len(agents)
+    pct = args["train_percent"]
     runs = args["runs"]
-    run_results = [None] * len(agents)
-    msg = f"Setting up {len(agents)} training runs, {runs} iterations " + \
-        "each"
+    run_results = [None] * tot
+    msg = f"Setting up {tot} training runs, {runs} iterations each"
     if (args["spread"]):
         msg += " (spread-mode)"
     msg += "."
@@ -204,21 +261,32 @@ def main():
     future_to_idx = {}
     with ProcessPoolExecutor(max_workers=args["max"]) as executor:
         for i, agent in enumerate(agents):
-            future = executor.submit(train_agent, agent, runs)
+            pos = i % count_per_agent
+            pos += 1
+            agent_id = f"{agent}-{agent.alpha:.2f}-{agent.gamma:.2f}" + \
+                f"-{agent.epsilon:.2f}"
+            future = executor.submit(
+                train_agent, agent, agent_id, pct, runs, pos, i, tot, dir
+            )
             future_to_idx[future] = i
 
     for future in as_completed(future_to_idx):
         idx = future_to_idx[future]
-        run = idx % count_per_agent
-        run += 1
         try:
             data = future.result()
         except Exception as e:
+            run = int(idx % count_per_agent)
+            run += 1
             msg = f"{agents[idx]} (run {run} of {count_per_agent}) threw " + \
                 f"exception: {e}"
             print(msg)
         else:
-            run_results[run][idx] = data
+            run_results[idx] = data
+
+    # Now gather all the datapoints and write the output CSV file:
+    rows = list(itertools.chain(*run_results))
+    print(f"\nWriting {args['output']}")
+    write_csv_output(args["output"], rows)
 
 
 if __name__ == "__main__":
