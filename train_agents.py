@@ -106,7 +106,7 @@ def parse_command_line():
         "--data",
         type=str,
         default="./learning",
-        help=f"Directory in which to write Q function data (./learning)"
+        help="Directory in which to write Q function data (./learning)"
     )
 
     return vars(parser.parse_args())
@@ -115,7 +115,8 @@ def parse_command_line():
 def write_csv_output(filename, rows):
     with open(filename, "w", newline="") as f:
         writer = csv.DictWriter(
-            f, delimiter=",", fieldnames=DATAPOINT_FIELDS
+            f, delimiter=",", fieldnames=DATAPOINT_FIELDS,
+            quoting=csv.QUOTE_ALL
         )
 
         writer.writeheader()
@@ -142,11 +143,11 @@ def create_agent(type, args, game):
 def train_agent(agent, agent_id, train_pct, runs, pos, idx, total, dir):
     datapoints = []
 
-    msg = f"{agent_id} starting ({agent} #{pos}, {idx} of {total})\n" + \
+    msg = f"\n{agent_id} starting ({agent} #{pos}, {idx+1} of {total})\n" + \
         f"\truns:    {runs}\n" + \
-        f"\talpha:   {agent.alpha}\n" + \
-        f"\tgamma:   {agent.gamma}\n" + \
-        f"\tepsilon: {agent.epsilon}\n"
+        f"\talpha:   {agent.alpha:.2f}\n" + \
+        f"\tgamma:   {agent.gamma:.2f}\n" + \
+        f"\tepsilon: {agent.epsilon:.2f}"
     print(msg)
 
     for run in range(runs):
@@ -162,19 +163,19 @@ def train_agent(agent, agent_id, train_pct, runs, pos, idx, total, dir):
             gamma=agent.gamma,
             epsilon=agent.epsilon,
             training_index=run,
-            test_performance=result["test_results"]["result"],
+            test_performance=result["testing_results"]["result"],
             num_states_visited=result["training_stats"]["states"],
             avg_visits_per_state=result["training_stats"]["avg_visits"],
-            avg_score=result["test_results"]["score_avg"],
-            avg_guesses=result["test_results"]["guess_avg"],
+            avg_score=result["testing_results"]["score_avg"],
+            avg_guesses=result["testing_results"]["guess_avg"],
             training_delta_raw=result["learning_delta_raw"],
             training_delta_rms=result["learning_delta_rms"],
         )
         datapoints.append(point)
 
-    print(f"{agent_id} finished")
+    print(f"\n{agent_id} finished")
     datafile = os.path.join(dir, agent_id + ".json")
-    print(f"{agent_id} writing {datafile}")
+    print(f"{agent_id} writing {agent_id + '.json'}")
     agent.Q.save(datafile)
 
     return datapoints
