@@ -4,8 +4,6 @@ This module implements a Reinforcement Learning-based agent that uses the Sarsa
 algorithm to train and select actions.
 """
 
-import numpy as np
-
 from .rl_base import BaseRLAgent
 
 
