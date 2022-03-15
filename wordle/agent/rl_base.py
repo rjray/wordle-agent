@@ -4,6 +4,8 @@ This provides `BaseRLAgent`, which acts as the base class for the agents that
 implement learning approaches.
 """
 
+from math import sqrt
+
 from .base import BaseAgent
 from ..shared.rl_utils import Qsa
 from ..shared.rl_actions import guess_by_random, guess_by_tglp, \
@@ -82,8 +84,8 @@ class BaseRLAgent(BaseAgent):
         self.epsilon = epsilon
 
         # Create both policy functions:
-        self.epsilon_greedy = self.Q.createEpsilonPolicy(epsilon)
-        self.max_value = self.Q.createMaximizeValuePolicy()
+        # self.epsilon_greedy = self.Q.createEpsilonPolicy(epsilon)
+        # self.max_value = self.Q.createMaximizeValuePolicy()
 
         # Instance-level temporary values used on a per-word basis:
         self.guesses = []
@@ -140,6 +142,20 @@ class BaseRLAgent(BaseAgent):
 
         return delta
 
+    def calculate_rms(self, before, after):
+        """Calculate the RMS (root-mean-square) of differences in the `Q(s,a)`
+        function between two snapshots, `before` and `after`."""
+
+        squares = []
+        default = [0] * len(self.action_table)
+
+        for key, val in after.items():
+            before_val = before.get(key, default)
+            sum_val = sum(map(lambda t: t[1] - t[0], zip(before_val, val)))
+            squares.append(sum_val * sum_val)
+
+        return sqrt(sum(squares) / len(squares))
+
     def train(self, train_pct=75):
         """Train this agent instance based on the learning algorithm in the
         implementation class's `play_once()` method.
@@ -186,13 +202,15 @@ class BaseRLAgent(BaseAgent):
         self.training_mode(False)
         testing_results = self.play()
 
-        learning_delta = self.calculate_delta(pre_snapshot, post_snapshot)
+        learning_delta_raw = self.calculate_delta(pre_snapshot, post_snapshot)
+        learning_delta_rms = self.calculate_rms(pre_snapshot, post_snapshot)
 
         return {
             "training_results": training_results,
             "testing_results": testing_results,
             "training_stats": training_stats,
-            "learning_delta": learning_delta,
+            "learning_delta_raw": learning_delta_raw,
+            "learning_delta_rms": learning_delta_rms,
         }
 
     def reset(self):

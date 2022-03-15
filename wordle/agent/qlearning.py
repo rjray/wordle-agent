@@ -29,7 +29,12 @@ class QLearningAgent(BaseRLAgent):
         # The starting state, within the simulation.
         state = (0,)
         # This is the function we'll use to determine actions.
-        policy = self.epsilon_greedy if self.training else self.max_value
+        # policy = self.epsilon_greedy if self.training else self.max_value
+        if self.training:
+            policy = self.Q.createEpsilonPolicy(self.epsilon)
+        else:
+            policy = self.Q.createMaximizeValuePolicy()
+
         # Start out by marking our start-state as visited.
         if self.training:
             self.Q.visit(state)

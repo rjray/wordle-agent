@@ -29,7 +29,7 @@ class Qsa(defaultdict):
             will be read.
         """
 
-        super().__init__(lambda: np.zeros(num_actions))
+        # super().__init__(lambda: np.zeros(num_actions))
         self.length = num_actions
         self.counts = defaultdict(int)
 
@@ -37,6 +37,9 @@ class Qsa(defaultdict):
             self.load(file)
 
         return
+
+    def __missing__(self, key: tuple):
+        return np.zeros(self.length)
 
     def visit(self, key: tuple) -> None:
         """Increment the visitation count of the given `key` (state)."""
