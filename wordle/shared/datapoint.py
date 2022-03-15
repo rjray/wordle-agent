@@ -29,7 +29,7 @@ class Datapoint(dict):
 
     def __init__(self, **kwargs) -> None:
         for k, v in kwargs.items():
-            self[k] = [v]
+            self[k] = v
 
         missing = []
         for field in DATAPOINT_FIELDS:
