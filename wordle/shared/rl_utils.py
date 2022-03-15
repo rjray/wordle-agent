@@ -141,3 +141,6 @@ class Qsa(defaultdict):
             return np.argmax(Q[state])
 
         return policy_fn
+
+    def reset(self) -> None:
+        self.counts.clear()

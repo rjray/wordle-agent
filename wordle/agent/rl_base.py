@@ -194,3 +194,7 @@ class BaseRLAgent(BaseAgent):
             "training_stats": training_stats,
             "learning_delta": learning_delta,
         }
+
+    def reset(self):
+        self.Q.reset()
+        super().reset()
