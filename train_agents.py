@@ -249,7 +249,8 @@ def main():
         game = Game(answers_list, words_list, **game_args)
         agent_specs.append((agent_type, agent_args, game))
 
-    # Now, if args["spread"] was given, we'll create 100 agents per agent-spec.
+    # Now, if args["spread"] was given, we'll create NxM agents per agent-spec,
+    # where N=<num of epsilon values> and M=<number of alpha values>.
     # Otherwise, each spec will create just one agent.
     agents = []
     if args["spread"]:
