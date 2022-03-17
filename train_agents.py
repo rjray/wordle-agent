@@ -113,6 +113,13 @@ def parse_command_line():
         help=f"Training part of train/test split (default is {TT_SPLIT})"
     )
     parser.add_argument(
+        "-G",
+        "--gamma",
+        type=float,
+        default=0.9,
+        help="Specify a specific value for gamma (default 0.9)"
+    )
+    parser.add_argument(
         "-d",
         "--data",
         type=str,
@@ -252,7 +259,7 @@ def main():
                     args_copy = agent_args.copy()
                     args_copy["alpha"] = alpha
                     args_copy["epsilon"] = epsilon
-                    args_copy["gamma"] = 0.9
+                    args_copy["gamma"] = args["gamma"]
                     agents.append(create_agent(agent_type, args_copy, game))
     else:
         for spec in agent_specs:
