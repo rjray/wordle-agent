@@ -15,6 +15,7 @@ import numpy as np
 from wordle.shared.datapoint import Datapoint
 
 ALLOWED_FIELDS = [
+    "train_performance",
     "test_performance",
     "num_states_visited",
     "avg_visits_per_state",
@@ -25,7 +26,8 @@ ALLOWED_FIELDS = [
 ]
 
 FIELD_LABELS = {
-    "test_performance": "Test Performance %",
+    "train_performance": "Training Performance %",
+    "test_performance": "Testing Performance %",
     "num_states_visited": "Number of States Visited",
     "avg_visits_per_state": "Avg Visits Per State",
     "avg_score": "Average Score",
@@ -39,6 +41,7 @@ FIELD_TRANSFORM = {
     "gamma": float,
     "epsilon": float,
     "training_index": int,
+    "train_performance": float,
     "test_performance": float,
     "num_states_visited": int,
     "avg_visits_per_state": float,

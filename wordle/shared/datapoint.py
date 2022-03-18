@@ -12,6 +12,7 @@ DATAPOINT_FIELDS = [
     "gamma",
     "epsilon",
     "training_index",
+    "train_performance",
     "test_performance",
     "num_states_visited",
     "avg_visits_per_state",

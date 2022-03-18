@@ -181,6 +181,7 @@ def train_agent(agent, agent_id, train_pct, runs, pos, idx, total, dir):
             gamma=agent.gamma,
             epsilon=agent.epsilon,
             training_index=run,
+            train_performance=result["training_results"]["result"],
             test_performance=result["testing_results"]["result"],
             num_states_visited=result["training_stats"]["states"],
             avg_visits_per_state=result["training_stats"]["avg_visits"],
