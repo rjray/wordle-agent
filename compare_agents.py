@@ -187,15 +187,12 @@ def create_plot(filename, runs):
     scores = [[] for _ in range(num_agents)]
     for i in range(num_agents):
         for run in runs:
-            score = run[i]["score_avg"]
+            score = run[i]["result"]
             if score > max_y:
                 max_y = score
             if score < min_y:
                 min_y = score
             scores[i].append(score)
-    # import pprint
-    # pp = pprint.PrettyPrinter(indent=2)
-    # pp.pprint(scores)
 
     _, ax = plt.subplots()
 
@@ -203,9 +200,9 @@ def create_plot(filename, runs):
     for i in range(1, num_agents):
         ax.plot(range(1, num_runs + 1), scores[i], label=labels[i])
 
-    ax.set(ylim=((min_y - 0.5), (max_y + 0.5)))
-    ax.set_ylabel("Average Score")
-    ax.set_title(f"Agent Scores Over {len(runs)} Runs")
+    ax.set(ylim=(0, 1.0))
+    ax.set_ylabel("Solve Percentage")
+    ax.set_title(f"Agent Solving Success Over {len(runs)} Runs")
     ax.legend()
 
     plt.savefig(filename)
