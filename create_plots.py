@@ -111,6 +111,11 @@ def parse_command_line(plot_types):
         action="store_true",
         help="If given, label Y-axis ticks with agent details"
     )
+    parser.add_argument(
+        "--title",
+        type=str,
+        help="Title for the plot"
+    )
 
     return vars(parser.parse_args())
 
@@ -152,7 +157,7 @@ def make_triple(id):
 
 def create_poly3d_plot(
     datasets, *, field, output, x_label=None, y_label=None, z_label=None,
-    max_samples, label_agent_ticks=False, **_
+    max_samples, label_agent_ticks=False, title=None, **_
 ):
     if not x_label:
         x_label = "Training Iteration"
@@ -201,6 +206,9 @@ def create_poly3d_plot(
         ax.set_yticklabels(yticklabels, ha="left", fontsize=6.0)
         # Remove the Y-label, the ticks will overlap with it
         ax.set(ylabel="")
+
+    if title:
+        ax.set_title(title)
 
     plt.savefig(output)
 
