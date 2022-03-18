@@ -105,6 +105,12 @@ def parse_command_line(plot_types):
         long = f"--{axis}-label"
         help = f"Label to use for the {axis.upper()} axis"
         parser.add_argument(short, long, type=str, help=help)
+    parser.add_argument(
+        "-lat",
+        "--label-agent-ticks",
+        action="store_true",
+        help="If given, label Y-axis ticks with agent details"
+    )
 
     return vars(parser.parse_args())
 
@@ -141,12 +147,12 @@ def make_triple(id):
     agent, alpha, gamma, epsilon = id.split("-")
     agent = agent.replace("Agent", "")
 
-    return f"(α={alpha}, γ={gamma}, ε={epsilon})"
+    return f"{agent}(α={alpha}, γ={gamma}, ε={epsilon})"
 
 
 def create_poly3d_plot(
     datasets, *, field, output, x_label=None, y_label=None, z_label=None,
-    max_samples, **_
+    max_samples, label_agent_ticks=False, **_
 ):
     if not x_label:
         x_label = "Training Iteration"
@@ -166,11 +172,19 @@ def create_poly3d_plot(
     data_max = max(all_data)
     # Make the pairs
     pairs = [create_pairs(ds) for ds in data]
-    # Create the labels for the y-ticks
-    yticklabels = [make_triple(ds[0]["id"]) for ds in datasets]
+    # Create the list of colors to use. Start with a dict indexed by the two
+    # agent-names. These are done on reversed maps so they can be popped from.
+    q_colors = list(plt.colormaps["Purples_r"](np.linspace(0, 0.5, len(data))))
+    s_colors = list(plt.colormaps["Greens_r"](np.linspace(0, 0.5, len(data))))
+    agent_colors = {
+        "QLearningAgent": q_colors,
+        "SarsaAgent": s_colors,
+    }
+    # Now interleave them based on the agent strings in the datasets.
+    colors = [agent_colors[ds[0]["agent"]].pop() for ds in datasets]
 
     ax = plt.figure().add_subplot(projection='3d')
-    colors = plt.colormaps["viridis_r"](np.linspace(0, 1, len(data)))
+    # colors = plt.colormaps["viridis_r"](np.linspace(0, 1, len(data)))
     poly = PolyCollection(pairs, facecolors=colors, alpha=0.7)
     ax.add_collection3d(poly, zdir="y", zs=zs_list)
     ax.set(
@@ -178,10 +192,15 @@ def create_poly3d_plot(
         ylim=(1, len(data) + 1),
         zlim=(0, data_max),
         xlabel=x_label,
-        ylabel="",
+        ylabel=y_label,
         zlabel=z_label
     )
-    ax.set_yticklabels(yticklabels, ha="left", fontsize=6.0)
+    if label_agent_ticks:
+        # Create the labels for the y-ticks
+        yticklabels = [make_triple(ds[0]["id"]) for ds in datasets]
+        ax.set_yticklabels(yticklabels, ha="left", fontsize=6.0)
+        # Remove the Y-label, the ticks will overlap with it
+        ax.set(ylabel="")
 
     plt.savefig(output)
 
