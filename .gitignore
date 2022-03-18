@@ -130,7 +130,5 @@ dmypy.json
 
 .vscode/
 test.py
-*.csv
-*.png
 
 learning/
