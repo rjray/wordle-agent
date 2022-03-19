@@ -51,9 +51,9 @@ class QLearningAgent(BaseRLAgent):
             if done:
                 result["result"] = 1
                 result["word"] = guess
-                # Experimental: give a +5 reward for solving
-                result["score"] += 5
-                reward += 5
+                # Apply the reward that was configured on the object:
+                result["score"] += self.reward
+                reward += self.reward
             else:
                 # If we haven't found the word, trim the list down based on
                 # our guess and its score.

@@ -111,8 +111,8 @@ class SimpleAgent(BaseAgent):
                 if sum(score) == 0:
                     result["result"] = 1
                     result["word"] = guess
-                    # Experimental: give a +5 rewards for solving
-                    result["score"] += 5
+                    # Apply the reward that was configured on the object:
+                    result["score"] += self.reward
                     break
                 else:
                     # If we haven't found the word, trim the list down based on

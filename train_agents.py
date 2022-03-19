@@ -87,6 +87,12 @@ def parse_command_line():
         help="Number of complete runs to do for all agents/specs",
     )
     parser.add_argument(
+        "--reward",
+        type=float,
+        default=5.0,
+        help="Reward to add when a word is correctly guessed (default 5.0)",
+    )
+    parser.add_argument(
         "-m",
         "--max",
         type=int,
@@ -234,7 +240,7 @@ def main():
     for agent_spec in args["agents"]:
         spec = agent_spec.split(",")
         agent_type = spec[0]
-        agent_args = {}
+        agent_args = {"reward": args["reward"]}
 
         for pair in spec[1:]:
             key, value = pair.split("=")

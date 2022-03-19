@@ -12,7 +12,7 @@ class BaseAgent():
     """The BaseAgent class is a common base-class for the different agents that
     will be developed. It only provides very basic operations."""
 
-    def __init__(self, game, words=None, *, name: str):
+    def __init__(self, game, words=None, *, name, reward=5.0):
         """Base constructor, to handle basic parts like handling the word list
         and the game instance.
 
@@ -24,11 +24,14 @@ class BaseAgent():
 
         Keyword parameters:
 
-            name: An identifying string that will be incorporated into the
-                  string representation of the object
+            `name`: An identifying string that will be incorporated into the
+            string representation of the object
+            `reward`: A value added to the score and the training when the
+            word is correctly guessed
         """
         self.game = game
         self.name = name
+        self.reward = reward
 
         if words:
             if isinstance(words, str):

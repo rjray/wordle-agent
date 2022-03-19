@@ -26,7 +26,7 @@ class BaseRLAgent(BaseAgent):
 
     def __init__(
         self, game, words=None, *, name=None, Q=None, file=None,
-        training=False, alpha=0.05, gamma=0.9, epsilon=0.05,
+        training=False, alpha=0.05, gamma=0.9, epsilon=0.05, reward=5.0,
         action_table=ACTION_TABLE, letter_pos_probs=None, tglp_table=None
     ):
         """Constructor for Reinforcement Learning agents.
@@ -52,6 +52,8 @@ class BaseRLAgent(BaseAgent):
             `alpha`: The value for α, the step-size factor
             `gamma`: The value for γ, the discount factor
             `epsilon`: The value for ε, the learning-rate factor
+            `reward`: A value added to the score and the training when the
+            word is correctly guessed. Defaults to `5.0`.
             `action_table`: A list of actions that will be chosen from by the
             policy function in use
             `letter_pos_probs`: If given, either the name of a file that holds
@@ -62,7 +64,7 @@ class BaseRLAgent(BaseAgent):
             If not given, this is derived from `game`.
         """
 
-        super().__init__(game, words, name=name)
+        super().__init__(game, words, name=name, reward=reward)
 
         # Not sure if I need to save this here or not. Might delete later.
         self.action_table = action_table
