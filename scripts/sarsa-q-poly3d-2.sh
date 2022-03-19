@@ -6,7 +6,6 @@
     --type poly3d \
     --field training_delta_rms \
     --max-samples 25 \
-    --title "Sarsa vs. Q-Learning, α fixed at 0.05" \
     --label-agent-ticks \
     --data-set SarsaAgent-0.05-0.90-0.05 \
     --data-set QLearningAgent-0.05-0.90-0.05 \
