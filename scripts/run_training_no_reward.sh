@@ -10,7 +10,8 @@ now=$(date '+%s')
     --spread \
     --runs 50 \
     --reward 0 \
-    --output agent_training-0.90.csv
+    --data ./learning-nr-tmp \
+    --output agent_training-0.90-nr.csv
 
 ./train_agents.py \
     --max 6 \
@@ -19,6 +20,7 @@ now=$(date '+%s')
     --game-arguments randomize=True,seed=$now \
     --spread \
     --runs 50 \
-    --reward 0 \
     --gamma 0.75 \
-    --output agent_training-0.75.csv
+    --reward 0 \
+    --data ./learning-nr-tmp \
+    --output agent_training-0.75-nr.csv
