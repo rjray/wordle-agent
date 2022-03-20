@@ -9,5 +9,5 @@ now=$(date '+%s')
     --agent qlearning,file=learning/QLearningAgent-0.05-0.90-0.05.json,tglp_table=data/training/common/tglp_table.json \
     --game-arguments randomize=True,seed=$now \
     --runs 100 \
-    --max 6 \
+    --max 4 \
     --plot runs-100x4.png
