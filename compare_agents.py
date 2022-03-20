@@ -188,14 +188,11 @@ def create_plot(filename, runs):
     num_runs = len(runs)
     labels = [agent_result["name"] for agent_result in runs[0]]
     num_agents = len(labels)
-    min_y = 0
-    max_y = -30
+    min_y = 0.75
     scores = [[] for _ in range(num_agents)]
     for i in range(num_agents):
         for run in runs:
             score = run[i]["result"]
-            if score > max_y:
-                max_y = score
             if score < min_y:
                 min_y = score
             scores[i].append(score)
@@ -206,9 +203,9 @@ def create_plot(filename, runs):
     for i in range(1, num_agents):
         ax.plot(range(1, num_runs + 1), scores[i], label=labels[i])
 
-    ax.set(ylim=(0, 1.0))
+    ax.set(ylim=(min_y, 1.0))
     ax.set_ylabel("Solve Percentage")
-    ax.set_title(f"Agent Solving Success Over {len(runs)} Runs")
+    # ax.set_title(f"Agent Solving Success Over {len(runs)} Runs")
     ax.legend()
 
     plt.savefig(filename)
@@ -229,15 +226,21 @@ def create_agent(type, args, game):
     return agent
 
 
-def run_agent(agent, run, count):
-    # Reset the agent prior to the run. For some agents, this introduces a
-    # slight amount of extra stochastic nature.
-    agent.reset()
+def run_agent(agent, count, iterations):
+    results = []
+    print(f"  Starting agent {agent}")
 
-    print(f"  Started:  agent {agent}, run {run+1}")
-    result = agent.play(count)
-    print(f"  Finished: agent {agent}, run {run+1}")
-    return result
+    for run in range(iterations):
+        # Reset the agent prior to each run. This introduces a slight amount of
+        # extra stochastic nature.
+        agent.reset()
+
+        print(f"    Started:  agent {agent}, run {run+1}")
+        results.append(agent.play(count))
+        print(f"    Finished: agent {agent}, run {run+1}")
+
+    print(f"  Completed agent {agent}")
+    return results
 
 
 def main():
@@ -297,19 +300,19 @@ def main():
 
     future_to_idx = {}
     with ProcessPoolExecutor(max_workers=args["max"]) as executor:
-        for run in range(runs):
-            for i, agent in enumerate(agents):
-                future = executor.submit(run_agent, agent, run, args["count"])
-                future_to_idx[future] = (i, run)
+        for i, agent in enumerate(agents):
+            future = executor.submit(run_agent, agent, args["count"], runs)
+            future_to_idx[future] = i
 
     for future in as_completed(future_to_idx):
-        idx, run = future_to_idx[future]
+        idx = future_to_idx[future]
         try:
             data = future.result()
         except Exception as e:
-            print(f"{agents[idx]} (run {run}) threw exception: {e}")
+            print(f"{agents[idx]} threw exception: {e}")
         else:
-            run_results[run][idx] = data
+            for run in range(runs):
+                run_results[run][idx] = data[run]
 
     # Handle validation and per-run actions.
     for run in range(runs):
